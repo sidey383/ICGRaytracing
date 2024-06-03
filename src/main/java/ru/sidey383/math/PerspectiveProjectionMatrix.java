@@ -4,10 +4,10 @@ public class PerspectiveProjectionMatrix implements Matrix {
 
     private final double[][] values;
 
-    public PerspectiveProjectionMatrix(double hs, double hw, double n, double f) {
+    public PerspectiveProjectionMatrix(double hs, double ws, double n, double f) {
         values = new double[4][4];
-        values[0][0] = 2 / hw;
-        values[1][1] = 2 / hs;
+        values[0][0] = 2 * n / ws;
+        values[1][1] = 2 * n / hs;
         values[2][2] = (f + n) / (f - n);
         values[2][3] = (-2 * f * n) / (f - n);
         values[3][2] = 1;

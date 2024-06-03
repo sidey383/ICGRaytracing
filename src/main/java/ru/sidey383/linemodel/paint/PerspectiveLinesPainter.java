@@ -28,17 +28,11 @@ public class PerspectiveLinesPainter implements LinesPainter {
             lines.addAll(supplier.createLines());
         }
         Matrix translation = getTranslationMatrix();
-        for (int i = 0; i < lines.size(); i++) {
-            lines.set(i, lines.get(i).apply(translation::multiply));
-        }
+        lines.replaceAll(vectorPair -> vectorPair.apply(translation::multiply));
         Matrix rotation = getRotationMatrix();
-        for (int i = 0; i < lines.size(); i++) {
-            lines.set(i, lines.get(i).apply(rotation::multiply));
-        }
+        lines.replaceAll(vectorPair -> vectorPair.apply(rotation::multiply));
         Matrix projection = getProjection(width, height);
-        for (int i = 0; i < lines.size(); i++) {
-            lines.set(i, lines.get(i).apply(projection::multiply));
-        }
+        lines.replaceAll(vectorPair -> vectorPair.apply(projection::multiply));
         GradientCreator gradientCreator = new GradientCreator(
                 lines.stream().mapMultiToDouble((v, c) -> {
                     c.accept(v.first().get(2) / v.first().get(3));
@@ -112,15 +106,11 @@ public class PerspectiveLinesPainter implements LinesPainter {
     }
 
     private Matrix getRotationMatrix() {
-        Vector3 z = camera.z();
-        double len = z.length();
-        double xAngle = Math.acos(z.get(0) / len);
-        double yAngle = Math.acos(z.get(1) / len);
-        double zAngle = Math.acos(z.get(2) / len);
-        Matrix xRot = MatrixTransformation.X.createRotationMatrix(xAngle);
-        Matrix yRot = MatrixTransformation.Y.createRotationMatrix(yAngle);
-        Matrix zRot = MatrixTransformation.Z.createRotationMatrix(zAngle);
-        return xRot.multiply(yRot).multiply(zRot);
+        return MatrixTransformation.getRotationMatrix(
+                camera.angleX(),
+                camera.angleY(),
+                camera.angleZ()
+        );
     }
 
     private Matrix getTranslationMatrix() {

@@ -44,7 +44,7 @@ public class ShowFrameActionListener extends MouseAdapter implements KeyListener
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         if (e.isControlDown()) {
-            interaction.goForward(e.getWheelRotation() * 0.05);
+            interaction.goForward(e.getWheelRotation() * 0.5);
         } else {
             interaction.zoom(e.getWheelRotation() * 0.05);
         }

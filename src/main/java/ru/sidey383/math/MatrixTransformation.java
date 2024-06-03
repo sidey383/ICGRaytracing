@@ -33,6 +33,10 @@ public enum MatrixTransformation {
         return new MatrixRecord(values);
     }
 
+    public static Matrix getRotationMatrix(double x, double y, double z) {
+        return X.createRotationMatrix(x).multiply(Y.createRotationMatrix(y)).multiply(Z.createRotationMatrix(z));
+    }
+
     public static Matrix getTransposition(double x, double y, double z) {
         double[][] values = new double[4][4];
         for (int i = 0; i < 4; i++) {
