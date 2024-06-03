@@ -5,7 +5,7 @@ import ru.sidey383.configuration.SceneConfiguration;
 import ru.sidey383.math.Vector3;
 
 public record FinalCamera(
-        Vector3 pos, Vector3 z, Vector3 right, Vector3 up,
+        Vector3 pos, Vector3 up, Vector3 z, Vector3 right,
         double height, double near, double far
 ) implements Camera {
 
@@ -23,9 +23,9 @@ public record FinalCamera(
     public FinalCamera(RenderConfiguration configuration) {
         this(
                 configuration.eye(),
+                configuration.up().normalize(),
                 configuration.view().sub(configuration.eye()).normalize(),
                 configuration.up().cross(configuration.view().sub(configuration.eye()).normalize()).normalize(),
-                configuration.up().normalize(),
                 configuration.height(),
                 configuration.front(),
                 configuration.back()

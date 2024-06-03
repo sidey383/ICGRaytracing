@@ -59,7 +59,7 @@ public class EditableCamera implements Camera {
     }
 
     public FinalCamera toFinalCamera() {
-        return new FinalCamera(pos, z, right, up, height, near, far);
+        return new FinalCamera(pos, up, z, right, height, near, far);
     }
 
     @Override

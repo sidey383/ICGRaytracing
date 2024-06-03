@@ -12,6 +12,11 @@ public class GradientCreator {
         min = Arrays.stream(distances).min().orElse(1);
     }
 
+    public GradientCreator(double min, double max) {
+        this.max = max;
+        this.min = min;
+    }
+
     public Color getDotColor(double value) {
         double distance = (value - min) / (max - min);
         return new Color((int) (255 / (2 - distance)), (int) (255 / (1 + distance)), 128);

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class App 
 {
     public static void main( String[] args ) throws IOException {
-        BufferedImage image = new BufferedImage(2000, 2000, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(500, 500, BufferedImage.TYPE_INT_RGB);
         RenderConfiguration configuration = RenderConfiguration.parseConfiguration(ConfigurationUtility.readFile(Path.of("sample.render")));
         SceneConfiguration sceneConfiguration = SceneConfiguration.readConfiguration(ConfigurationUtility.readFile(Path.of("sample.scene")));
         FinalCamera camera = new FinalCamera(configuration);
@@ -45,7 +45,7 @@ public class App
                 configuration.traceDepth(),
                 sceneConfiguration.ambient()
         );
-        ImageRaytracing raytracing = new ImageRaytracing(image, raytraceConfiguration, 4);
+        ImageRaytracing raytracing = new ImageRaytracing(image, raytraceConfiguration, 16);
         raytracing.accept(() -> {
             BufferedImage cimage = raytracing.calculateImage();
             try (OutputStream os = Files.newOutputStream(Path.of("result2.png"))) {

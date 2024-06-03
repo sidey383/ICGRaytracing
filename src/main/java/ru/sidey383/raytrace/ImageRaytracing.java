@@ -49,21 +49,24 @@ public class ImageRaytracing implements Consumer<Runnable> {
         workThread = new Thread(() -> {
             List<Future<?>> futures = new ArrayList<>(this.image.getHeight() * this.image.getWidth());
             for (int y = 0; y < this.image.getHeight(); y++) {
-                for (int x = 0; x < this.image.getWidth(); x++) {
-                    int finalX = x;
-                    int finalY = y;
-                    Ray ray = getRay(configuration.camera(), finalX, finalY, this.image.getHeight(), this.image.getWidth());
-                    RayTraceTask task = new RayTraceTask(
-                            ray, configuration.depth(), configuration.objectList(), configuration.lights(), configuration.ambient(),
-                            (color) -> {
-                                synchronized (this) {
-                                    colors[finalX][finalY] = color;
-                                }
-                                completeCount.incrementAndGet();
+                int finalY = y;
+                futures.add(executor.submit(() -> {
+                            for (int x = 0; x < this.image.getWidth(); x++) {
+                                int finalX = x;
+                                Ray ray = getRay(configuration.camera(), finalX, finalY, this.image.getHeight(), this.image.getWidth());
+                                RayTraceTask task = new RayTraceTask(
+                                        ray, configuration.depth(), configuration.objectList(), configuration.lights(), configuration.ambient(),
+                                        (color) -> {
+                                            synchronized (this) {
+                                                colors[finalX][finalY] = color;
+                                            }
+                                            completeCount.incrementAndGet();
+                                        }
+                                );
+                                task.run();
                             }
-                    );
-                    futures.add(executor.submit(task));
-                }
+                        })
+                );
             }
             for (Future<?> f : futures) {
                 try {
@@ -134,9 +137,9 @@ public class ImageRaytracing implements Consumer<Runnable> {
     private static Ray getRay(Camera camera, int x, int y, int height, int width) {
         Vector3 direction =
                 camera.z().mul(camera.near())
-                .add(camera.right().mul((x - (double)width / 2) * camera.height() / width))
-                .add(camera.up().mul((y - (double)height / 2) * camera.height() / height));
-         return new Ray(camera.pos(), direction);
+                        .add(camera.right().mul(2 * camera.height() * ((x - width / 2.0) / width)))
+                        .add(camera.up().mul((2 * camera.height() * width / height) * (((height / 2.0) - y) / height)));
+        return new Ray(camera.pos(), direction);
     }
 
 }

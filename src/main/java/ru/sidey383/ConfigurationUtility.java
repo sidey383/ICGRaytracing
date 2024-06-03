@@ -56,7 +56,7 @@ public class ConfigurationUtility {
     }
 
     public static Quality readQuality(String str) {
-        return Quality.getQuality(str);
+        return Quality.getQuality(str.strip());
     }
 
     public static Vector readValuePair(String str) {
