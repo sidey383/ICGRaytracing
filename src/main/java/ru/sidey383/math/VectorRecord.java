@@ -14,6 +14,11 @@ public record VectorRecord(double... values) implements Vector {
     }
 
     @Override
+    public VectorRecord clone() {
+        return new VectorRecord(Arrays.copyOf(values, values.length));
+    }
+
+    @Override
     public String toString() {
         return "VectorRecord{" +
                "values=" + Arrays.toString(values) +
