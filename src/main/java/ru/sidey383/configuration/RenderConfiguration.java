@@ -7,7 +7,7 @@ import static ru.sidey383.ConfigurationUtility.*;
 import java.util.Iterator;
 
 public record RenderConfiguration(
-        Vector3 backgroundColor,
+        Vector3 background,
         double gamma,
         int traceDepth,
         Quality quality,

@@ -2,14 +2,11 @@ package ru.sidey383.configuration;
 
 import ru.sidey383.ConfigurationUtility;
 import ru.sidey383.ParseIterator;
-import ru.sidey383.camera.FinalCamera;
-import ru.sidey383.linemodel.model.Pair;
+import ru.sidey383.render.linemodel.model.Pair;
 import ru.sidey383.math.Vector3;
 import ru.sidey383.math.Vector3Record;
-import ru.sidey383.objects.*;
-import ru.sidey383.raytrace.LightSource;
-import ru.sidey383.raytrace.RaytraceConfiguration;
-import ru.sidey383.raytrace.RaytraceObject;
+import ru.sidey383.render.objects.*;
+import ru.sidey383.render.objects.LightSource;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,15 +42,15 @@ public record SceneConfiguration(Vector3 ambient, List<LightSource> lights, List
             if (type.equalsIgnoreCase("sphere")) {
                 if (!lines.hasNext())
                     throw new IllegalArgumentException("No radius for sphere");
-               var desc = new SphereDescription(first, readValue(lines.next()));
+                double radius = readValue(lines.next());
                 ConfigurationUtility.MaterialInfo material = ConfigurationUtility.readMaterial(lines.next());
-                objects.add(new SphereWithMaterial(desc, material.diffuse(), material.specular(), material.power()));
+                objects.add(new SphereFigure(first, radius, material.diffuse(), material.specular(), material.power()));
             } else if (type.equalsIgnoreCase("box")) {
                 if (!lines.hasNext())
                     throw new IllegalArgumentException("No second point for box");
                 Vector3 second = readVector(lines.next());
                 ConfigurationUtility.MaterialInfo material = ConfigurationUtility.readMaterial(lines.next());
-                objects.add(new BoxWithMaterial(new BoxDescription(first, second), material.diffuse(), material.specular(), material.power()));
+                objects.add(new BoxFigure(first, second, material.diffuse(), material.specular(), material.power()));
             } else if (type.equalsIgnoreCase("triangle")) {
                 if (!lines.hasNext())
                     throw new IllegalArgumentException("No second point for triangle");
@@ -62,7 +59,7 @@ public record SceneConfiguration(Vector3 ambient, List<LightSource> lights, List
                     throw new IllegalArgumentException("No third point for triangle");
                 Vector3 third = readVector(lines.next());
                 ConfigurationUtility.MaterialInfo material = ConfigurationUtility.readMaterial(lines.next());
-                objects.add(new TriangleWithMaterial(new TriangleDescription(first, second, third), material.diffuse(), material.specular(), material.power()));
+                objects.add(new TriangleFigure(first, second, third, material.diffuse(), material.specular(), material.power()));
             } else if (type.equalsIgnoreCase("quadrangle")) {
                 if (!lines.hasNext())
                     throw new IllegalArgumentException("No second point for quadrangle");
@@ -74,7 +71,7 @@ public record SceneConfiguration(Vector3 ambient, List<LightSource> lights, List
                     throw new IllegalArgumentException("No fourth point for quadrangle");
                 Vector3 fourth = readVector(lines.next());
                 ConfigurationUtility.MaterialInfo material = ConfigurationUtility.readMaterial(lines.next());
-                objects.add(new QuadrangleWithMaterial(new QuadrangleDescription(first, second, third, fourth), material.diffuse(), material.specular(), material.power()));
+                objects.add(new QuadrangleFigure(first, second, third, fourth, material.diffuse(), material.specular(), material.power()));
             } else {
                 throw new IllegalArgumentException("Unknown figure type: " + type);
             }

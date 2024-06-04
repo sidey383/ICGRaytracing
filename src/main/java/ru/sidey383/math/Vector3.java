@@ -2,7 +2,11 @@ package ru.sidey383.math;
 
 public interface Vector3 extends Vector {
 
-    public static final Vector3 ZERO = new Vector3Record(0, 0, 0);
+    Vector3 ZERO = new Vector3Record(0, 0, 0);
+
+    Vector3 X = new Vector3Record(1, 0 ,0);
+    Vector3 Y = new Vector3Record(0, 1, 0);
+    Vector3 Z = new Vector3Record(0, 0, 1);
 
     default int size() {
         return 3;
@@ -88,4 +92,7 @@ public interface Vector3 extends Vector {
     default double z() {
         return get(2);
     }
+
+    Vector3 clone();
+
 }

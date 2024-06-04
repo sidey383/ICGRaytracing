@@ -1,13 +1,12 @@
 package ru.sidey383;
 
 import ru.sidey383.configuration.Quality;
-import ru.sidey383.linemodel.model.Pair;
+import ru.sidey383.render.linemodel.model.Pair;
 import ru.sidey383.math.Vector;
 import ru.sidey383.math.Vector3;
 import ru.sidey383.math.Vector3Record;
 import ru.sidey383.math.VectorRecord;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
