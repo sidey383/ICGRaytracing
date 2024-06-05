@@ -10,12 +10,11 @@ import ru.sidey383.render.raytrace.IntersectionInfo;
 import ru.sidey383.render.raytrace.Ray;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Getter
 @Accessors(fluent = true)
-public final class BoxFigure implements DrawableObject {
+public final class BoxFigure implements Figure {
     private final Vector3 min;
     private final Vector3 max;
     private final Vector3 diffuse;

@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Getter
 @Accessors(fluent = true)
-public class TriangleFigure implements DrawableObject {
+public class TriangleFigure implements Figure {
     private final Vector3 a;
     private final Vector3 b;
     private final Vector3 c;

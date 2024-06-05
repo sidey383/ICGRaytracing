@@ -50,6 +50,23 @@ public class ConfigurationUtility {
         );
     }
 
+    public static String writeVector(Vector3 v) {
+        return v.x() + " " + v.y() + " " + v.z();
+    }
+
+    public static String writeQuality(Quality q) {
+        return q.name().toLowerCase();
+    }
+
+
+    public static double ranged(double v) {
+        return Math.max(1, Math.min(0, v));
+    }
+
+    public static Vector3 ranged(Vector3 v) {
+        return new Vector3Record(ranged(v.x()), ranged(v.y()), ranged(v.z()));
+    }
+
     public static double readValue(String str) {
         return Double.parseDouble(str);
     }
@@ -68,6 +85,12 @@ public class ConfigurationUtility {
         try (InputStream is = Files.newInputStream(p)) {
             return new String(is.readAllBytes());
         }
+    }
+
+    public static void writeMaterial(StringBuilder sb, Vector3 diffuse, Vector3 specular, double power) {
+        sb.append(diffuse.x() * 255).append(' ').append(diffuse.y() * 255).append(' ').append(diffuse.z() * 255).append(' ')
+                .append(specular.x() * 255).append(' ').append(specular.y() * 255).append(' ').append(specular.z() * 255).append(' ')
+                .append(power).append('\n');
     }
 
 }

@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Getter
 @Accessors(fluent = true)
-public final class SphereFigure implements DrawableObject {
+public final class SphereFigure implements Figure {
     private final Vector3 position;
     private final double radius;
     private final Vector3 diffuse;

@@ -1,10 +1,10 @@
-package ru.sidey383.inerface;
+package ru.sidey383.interfaceV2;
 
 import java.awt.event.*;
 
 public class ShowFrameActionListener extends MouseAdapter implements KeyListener {
 
-    private final FrameInteraction interaction;
+    private final CameraInteractions interaction;
 
     private int lastX = 0;
 
@@ -12,7 +12,7 @@ public class ShowFrameActionListener extends MouseAdapter implements KeyListener
 
     private boolean isClicked = false;
 
-    public ShowFrameActionListener(FrameInteraction interaction) {
+    public ShowFrameActionListener(CameraInteractions interaction) {
         this.interaction = interaction;
     }
 
@@ -28,9 +28,9 @@ public class ShowFrameActionListener extends MouseAdapter implements KeyListener
         if (isClicked) {
             int dx = e.getX() - lastX;
             int dy = e.getY() - lastY;
-            double xRot = Math.PI * dx / interaction.screenWidth();
-            double yRot = Math.PI * dy / interaction.screenHeight();
-            interaction.move(xRot, yRot);
+            double xRot = 2 * Math.PI * dx / interaction.screenWidth();
+            double yRot = 2 * Math.PI * dy / interaction.screenHeight();
+            interaction.rotateCamera(xRot, -yRot);
         }
         lastX = e.getX();
         lastY = e.getY();

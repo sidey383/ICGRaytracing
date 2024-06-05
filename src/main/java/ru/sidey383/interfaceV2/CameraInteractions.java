@@ -1,8 +1,6 @@
-package ru.sidey383.inerface;
+package ru.sidey383.interfaceV2;
 
-import ru.sidey383.math.Vector3;
-
-public interface FrameInteraction {
+public interface CameraInteractions {
 
     void rotateCamera(double xRot, double yRot);
 

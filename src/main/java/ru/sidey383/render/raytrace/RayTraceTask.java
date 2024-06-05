@@ -5,6 +5,9 @@ import ru.sidey383.render.objects.LightSource;
 import ru.sidey383.render.raytrace.controller.RaytraceController;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class RayTraceTask implements Runnable {
 
@@ -12,8 +15,11 @@ public class RayTraceTask implements Runnable {
     private final int x;
     private final int y;
     private final RaytraceConfiguration configuration;
+    private final CountDownLatch latch;
+    private final AtomicBoolean isComplete = new AtomicBoolean(false);
 
-    public RayTraceTask(int x, int y, RaytraceController controller, RaytraceConfiguration configuration) {
+    public RayTraceTask(int x, int y, RaytraceController controller, RaytraceConfiguration configuration, CountDownLatch latch) {
+        this.latch = latch;
         this.controller = controller;
         this.x = x;
         this.y = y;
@@ -22,7 +28,13 @@ public class RayTraceTask implements Runnable {
 
     @Override
     public void run() {
-        controller.applyRay(getColors(controller.getRay(x, y), configuration.depth()).color(), x, y);
+        try {
+            if (isComplete.getAndSet(true))
+                throw new IllegalStateException("Task is already ran");
+            controller.applyRay(getColors(controller.getRay(x, y), configuration.depth()).color(), x, y);
+        } finally {
+            latch.countDown();
+        }
     }
 
     private RaytraceResult getColors(Ray ray, int depth) {

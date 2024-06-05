@@ -14,14 +14,14 @@ import java.util.List;
 
 import static ru.sidey383.ConfigurationUtility.*;
 
-public record SceneConfiguration(Vector3 ambient, List<LightSource> lights, List<DrawableObject> objects) {
+public record SceneConfigurationRecord(Vector3 ambient, List<LightSource> lights, List<Figure> objects) {
 
-    public static SceneConfiguration readConfiguration(String str) {
+    public static SceneConfigurationRecord parseConfiguration(String str) {
         Iterator<String> lines = new ParseIterator(str.lines().iterator());
         Vector3 ambient;
         if (!lines.hasNext())
             throw new IllegalArgumentException("No ambient light");
-        ambient = readVector(lines.next()).mul(1.0/255);
+        ambient = ConfigurationUtility.ranged(readVector(lines.next()).mul(1.0/255.0));
         int lightCount;
         if (!lines.hasNext())
             throw new IllegalArgumentException("No light count");
@@ -29,9 +29,9 @@ public record SceneConfiguration(Vector3 ambient, List<LightSource> lights, List
         List<LightSource> lights = new ArrayList<>();
         for (int i = 0; i < lightCount; i++) {
             Pair<Vector3> pair = readVectorPair(lines.next());
-            lights.add(new LightSource(pair.first(), pair.second()));
+            lights.add(new LightSource(pair.first(), pair.second().mul(1.0/255.0)));
         }
-        List<DrawableObject> objects = new ArrayList<>();
+        List<Figure> objects = new ArrayList<>();
         while (lines.hasNext()) {
             String start = lines.next();
             String[] vals = start.split("\\s+");
@@ -77,7 +77,7 @@ public record SceneConfiguration(Vector3 ambient, List<LightSource> lights, List
             }
         }
 
-        return new SceneConfiguration(ambient, lights, objects);
+        return new SceneConfigurationRecord(ambient, lights, objects);
 
     }
 

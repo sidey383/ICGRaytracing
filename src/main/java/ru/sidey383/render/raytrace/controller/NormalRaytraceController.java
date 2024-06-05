@@ -1,13 +1,13 @@
 package ru.sidey383.render.raytrace.controller;
 
-import ru.sidey383.camera.FinalCamera;
+import ru.sidey383.render.camera.FinalCamera;
 import ru.sidey383.math.Vector3;
 
 import java.awt.image.BufferedImage;
 
 public class NormalRaytraceController extends AbstractRaytraceController {
-    public NormalRaytraceController(int width, int height, FinalCamera camera, Runnable onComplete) {
-        super(width, height, camera, onComplete);
+    public NormalRaytraceController(int width, int height, FinalCamera camera) {
+        super(width, height, camera);
     }
 
     @Override

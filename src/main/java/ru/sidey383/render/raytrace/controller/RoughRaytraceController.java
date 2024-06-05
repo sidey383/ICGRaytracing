@@ -1,6 +1,6 @@
 package ru.sidey383.render.raytrace.controller;
 
-import ru.sidey383.camera.FinalCamera;
+import ru.sidey383.render.camera.FinalCamera;
 import ru.sidey383.math.Vector3;
 
 import java.awt.image.BufferedImage;
@@ -9,8 +9,8 @@ public class RoughRaytraceController extends AbstractRaytraceController {
 
     private final int force;
 
-    public RoughRaytraceController(int width, int height, FinalCamera camera, int force, Runnable onComplete) {
-        super((width + force - 1) / force, (height + force - 1) / force, camera, onComplete);
+    public RoughRaytraceController(int width, int height, FinalCamera camera, int force) {
+        super((width + force - 1) / force, (height + force - 1) / force, camera);
         this.force = force;
     }
 

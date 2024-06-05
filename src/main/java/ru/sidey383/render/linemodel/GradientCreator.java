@@ -19,7 +19,11 @@ public class GradientCreator {
 
     public Color getDotColor(double value) {
         double distance = (value - min) / (max - min);
-        return new Color((int) (255 / (2 - distance)), (int) (255 / (1 + distance)), 128);
+        return new Color(normalize(distance), normalize(distance), 128);
+    }
+
+    private int normalize(double val) {
+        return Math.min(255, Math.max(0, (int) val));
     }
 
 }

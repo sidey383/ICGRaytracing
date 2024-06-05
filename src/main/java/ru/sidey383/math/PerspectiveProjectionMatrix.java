@@ -8,9 +8,9 @@ public class PerspectiveProjectionMatrix implements Matrix {
         values = new double[4][4];
         values[0][0] = 2 * n / ws;
         values[1][1] = 2 * n / hs;
-        values[2][2] = (f + n) / (f - n);
+        values[2][2] = f/(f-n);
         values[2][3] = 1;
-        values[3][2] = (-2 * f * n) / (f - n);
+        values[3][2] = -(f*n)/(f-n);
     }
 
     @Override

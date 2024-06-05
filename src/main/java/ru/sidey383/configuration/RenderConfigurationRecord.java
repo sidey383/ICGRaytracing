@@ -6,7 +6,7 @@ import static ru.sidey383.ConfigurationUtility.*;
 
 import java.util.Iterator;
 
-public record RenderConfiguration(
+public record RenderConfigurationRecord(
         Vector3 background,
         double gamma,
         int traceDepth,
@@ -14,13 +14,13 @@ public record RenderConfiguration(
         Vector3 eye,
         Vector3 view,
         Vector3 up,
-        double front,
-        double back,
+        double near,
+        double far,
         double width,
         double height
 ) {
 
-    public static RenderConfiguration parseConfiguration(String config) {
+    public static RenderConfigurationRecord parseConfiguration(String config) {
         Iterator<String> i = config.lines().iterator();
         int value = 0;
         Vector3 backgroundColor = null;
@@ -37,7 +37,7 @@ public record RenderConfiguration(
             str = str.split("//")[0];
             if (str.isBlank()) continue;
             switch (value) {
-                case 0 -> backgroundColor = readVector(str);
+                case 0 -> backgroundColor = readVector(str).mul(1.0/255.0);
                 case 1 -> gamma = readValue(str);
                 case 2 -> traceDepth = (int) readValue(str);
                 case 3 -> quality = readQuality(str);
@@ -56,7 +56,19 @@ public record RenderConfiguration(
             throw new IllegalArgumentException("View range and sizes must be positive");
         if (viewRange.get(0) > viewRange.get(1))
             throw new IllegalArgumentException("The near plane should be further than the far one");
-        return new RenderConfiguration(backgroundColor, gamma, traceDepth, quality, eye, view, up, viewRange.get(0), viewRange.get(1), sizes.get(0), sizes.get(1));
+        return new RenderConfigurationRecord(backgroundColor, gamma, traceDepth, quality, eye, view, up, viewRange.get(0), viewRange.get(1), sizes.get(0), sizes.get(1));
+    }
+
+    public String writeConfiguration() {
+        return writeVector(background.mul(255)) + "\n" +
+                gamma + "\n" +
+                traceDepth + "\n" +
+                writeQuality(quality) + "\n" +
+                writeVector(eye) + "\n" +
+                writeVector(view) + "\n" +
+                writeVector(up) + "\n" +
+                near + " " + far + "\n" +
+                width + " " + height + "\n";
     }
 
 
