@@ -1,6 +1,6 @@
 package ru.sidey383.inerface.view;
 
-import ru.sidey383.interfaceV2.CameraInteractions;
+import ru.sidey383.inerface.CameraInteractions;
 import ru.sidey383.model.ApplicationParameters;
 import ru.sidey383.render.linemodel.paint.LinesPainter;
 
@@ -33,7 +33,7 @@ public class PreviewSceneView extends JPanel implements CameraInteractions {
 
     @Override
     public void paintComponent(Graphics g) {
-        Dimension size = getVisibleRect().getSize();
+        Dimension size = getSize();
         if (size.height == 0 || size.width == 0)
             return;
         int width = size.width;
@@ -52,6 +52,7 @@ public class PreviewSceneView extends JPanel implements CameraInteractions {
     @Override
     public void rotateCamera(double xRot, double yRot) {
         parameters.getCamera().rotate(xRot, yRot);
+        this.revalidate();
         this.repaint();
     }
 
@@ -68,18 +69,21 @@ public class PreviewSceneView extends JPanel implements CameraInteractions {
     @Override
     public void goForward(double val) {
         parameters.getCamera().goForward(val);
+        this.revalidate();
         this.repaint();
     }
 
     @Override
     public void move(double x, double y) {
         parameters.getCamera().move(x, y);
+        this.revalidate();
         this.repaint();
     }
 
     @Override
     public void zoom(double value) {
         parameters.getCamera().zoom(value);
+        this.revalidate();
         this.repaint();
     }
 }

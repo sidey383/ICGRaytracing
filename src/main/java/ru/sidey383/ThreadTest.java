@@ -1,6 +1,7 @@
 package ru.sidey383;
 
 import ru.sidey383.model.ApplicationParameters;
+import ru.sidey383.render.linemodel.paint.LinesPainter;
 import ru.sidey383.render.raytrace.RaytraceConfiguration;
 import ru.sidey383.render.raytrace.RaytracingRender;
 
@@ -43,6 +44,16 @@ public class ThreadTest {
                 throw new RuntimeException(e);
             }
         });
+        {
+            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+            var draw = new LinesPainter();
+            draw.createImage(parameters.getCamera(), parameters.getSceneState().getObjects(), image.createGraphics(), width, height);
+            try {
+                ImageIO.write(image, "png", new java.io.File("lines.png"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
 }

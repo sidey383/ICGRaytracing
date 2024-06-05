@@ -1,4 +1,4 @@
-package ru.sidey383.interfaceV2;
+package ru.sidey383.inerface;
 
 public interface CameraInteractions {
 

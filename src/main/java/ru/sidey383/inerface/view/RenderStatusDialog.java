@@ -3,6 +3,7 @@ package ru.sidey383.inerface.view;
 import ru.sidey383.render.raytrace.RaytracingRender;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -15,11 +16,11 @@ public class RenderStatusDialog extends JDialog {
     private final JLabel isFailed;
 
     public RenderStatusDialog(RaytracingRender.RenderStatus status, Runnable interrupt) {
-        setName("Render status");
+        setTitle("Render status");
         errorField = new JTextField();
         errorField.setEditable(false);
         progressBar = new JProgressBar();
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         isRunning = new JLabel();
         isComplete = new JLabel();
         isFailed = new JLabel();
@@ -31,6 +32,8 @@ public class RenderStatusDialog extends JDialog {
         add(isRunning);
         add(isFailed);
         acceptStatus(status);
+        pack();
+        setMinimumSize(new Dimension(300, 200));
 
     }
 
@@ -47,6 +50,8 @@ public class RenderStatusDialog extends JDialog {
             String sStackTrace = sw.toString();
             errorField.setText(sStackTrace);
             add(errorField);
+            pack();
+            setMinimumSize(new Dimension(300, 200));
         }
     }
 

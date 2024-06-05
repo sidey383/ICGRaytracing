@@ -19,8 +19,8 @@ public class LinesPainter {
         }
         Matrix translation = getTranslationMatrix(camera);
         lines.replaceAll(vectorPair -> vectorPair.apply(translation::multiply));
-        Matrix rotation = getRotationMatrix(camera);
-        lines.replaceAll(vectorPair -> vectorPair.apply(rotation::multiply));
+//        Matrix rotation = getRotationMatrix(camera);
+//        lines.replaceAll(vectorPair -> vectorPair.apply(rotation::multiply));
         Matrix projection = getProjection(camera, width, height);
         lines.replaceAll(vectorPair -> vectorPair.apply(projection::multiply));
         g.setColor(Color.WHITE);
@@ -35,26 +35,6 @@ public class LinesPainter {
             double y1Pose = v1.get(1) / v1.get(3);
             double x2Pose = v2.get(0) / v2.get(3);
             double y2Pose = v2.get(1) / v2.get(3);
-            double z1Pose = v1.get(2);
-            double z2Pose = v2.get(2);
-            if (z1Pose != z2Pose) {
-
-                if (z1Pose < 0) {
-                    if (z2Pose <= 0)
-                        continue;
-                    x1Pose = (x1Pose * z2Pose + x2Pose * -z1Pose) / (z2Pose - z1Pose);
-                    y1Pose = (y1Pose * z2Pose + y2Pose *  -z1Pose) / (z2Pose - z1Pose);
-                    z2Pose = 0;
-                }
-                if (z2Pose < 0) {
-                    x2Pose = (x1Pose * -z2Pose + x2Pose * z1Pose) / (z1Pose - z2Pose);
-                    y2Pose = (y1Pose * -z2Pose + y2Pose * z1Pose) / (z1Pose - z2Pose);
-                    z2Pose = 0;
-                }
-            } else {
-                if (z1Pose < 0)
-                    continue;
-            }
             int x1 = (int) (width * x1Pose) + width / 2;
             int y1 = (height / 2) - (int) (height * y1Pose);
             int x2 = (int) (width * x2Pose) + width / 2;
@@ -75,22 +55,16 @@ public class LinesPainter {
     }
 
     private Matrix getRotationMatrix(Camera camera) {
-        QuaternionRotation first = getTargetRotation(camera.up(), Vector3.Y);
-        Matrix rotation = first.toRotationMatrix();
-        QuaternionRotation second = getTargetRotation(
-                Vector3Record.crop(rotation.multiply(camera.right().toVector4())),
-                Vector3.X
-        );
-        return rotation.multiply(second.toRotationMatrix());
-    }
-
-    private static QuaternionRotation getTargetRotation(Vector3 from, Vector3 to) {
-        Vector3 cross = from.cross(to);
-        double w = from.length();
-        if (w < 1e-30)
-            return new QuaternionRotation(1, 0, 0, 0);
-        w = w*w + from.dot(to);
-        return new QuaternionRotation(cross.x(), cross.y(), cross.z(), w);
+        Vector3 dir = camera.dir();
+        double cos = dir.dot(Vector3.Z) / dir.length();
+        Vector3 axis = dir.cross(Vector3.Z);
+        QuaternionRotation firstRotation = new QuaternionRotation(axis, Math.acos(cos));
+        Vector3 up = camera.up();
+        up = firstRotation.mult(up);
+        cos = up.dot(Vector3.Y) / up.length();
+        axis = up.cross(Vector3.Y);
+        QuaternionRotation second = new QuaternionRotation(axis, Math.acos(cos));
+        return firstRotation.mult(second).toRotationMatrix();
     }
 
     private Matrix getTranslationMatrix(Camera camera) {

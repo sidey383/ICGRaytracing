@@ -22,6 +22,7 @@ public class RenderSceneView extends JPanel {
     private final RenderStatusDialog statusDialog;
 
     @Getter
+    @NotNull
     private final JScrollPane scrollPane;
 
     public RenderSceneView(@NotNull ApplicationParameters parameters, @NotNull BufferedImage image) {
@@ -55,6 +56,8 @@ public class RenderSceneView extends JPanel {
         raytracing.startRender(this::onComplete);
         statusUpdateTimer.start();
         imageUpdateTimer.start();
+        statusDialog.setAlwaysOnTop(true);
+        statusDialog.setVisible(true);
     }
 
     public void stopRender() {
@@ -62,16 +65,16 @@ public class RenderSceneView extends JPanel {
     }
 
     public void syncRepaint() {
-        SwingUtilities.invokeLater(this::repaint);
+        SwingUtilities.invokeLater(() -> {
+            this.revalidate();
+            this.repaint();
+        }
+        );
     }
 
     public void updateGamma() {
         raytracing.drawImage(image, parameters.getRaytraceSettings().getGamma());
         syncRepaint();
-    }
-
-    public JScrollPane getMyPanel() {
-        return scrollPane;
     }
 
     private void setSizes() {
@@ -105,7 +108,7 @@ public class RenderSceneView extends JPanel {
     }
 
     @Override
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
         g.drawImage(image, 0, 0, null);
     }
 }

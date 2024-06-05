@@ -98,21 +98,30 @@ public class MainFrame extends JFrame implements SceneHolder {
     private void setPreview() {
         if (renderSceneView != null) {
             renderSceneView.stopRender();
+            remove(renderSceneView.getScrollPane());
             renderSceneView = null;
         }
         add(previewSceneView, BorderLayout.CENTER);
         previewItem.setSelected(true);
-        previewItem.repaint();
+        revalidate();
+        previewSceneView.revalidate();
+        repaint();
+        previewSceneView.repaint();
     }
 
     private void setRender() {
         if (renderSceneView != null) {
             renderSceneView.stopRender();
+            remove(renderSceneView.getScrollPane());
         }
         renderSceneView = new RenderSceneView(parameters, previewSceneView.createImage());
+        remove(previewSceneView);
         add(renderSceneView.getScrollPane(), BorderLayout.CENTER);
         renderItem.setSelected(true);
+        revalidate();
+        repaint();
         renderSceneView.startRender();
+        renderSceneView.revalidate();
         renderSceneView.repaint();
     }
 
