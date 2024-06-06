@@ -48,7 +48,7 @@ public class ShowFrameActionListener extends MouseAdapter implements KeyListener
         if (e.isControlDown()) {
             interaction.goForward(e.getWheelRotation() * 0.5);
         } else {
-            interaction.zoom(e.getWheelRotation() * 0.05);
+            interaction.zoom(e.getWheelRotation() * 0.5);
         }
     }
 
@@ -63,16 +63,16 @@ public class ShowFrameActionListener extends MouseAdapter implements KeyListener
     }
 
     private void keyAction(KeyEvent e) {
-        if (e.getKeyChar() == 'w' || e.getKeyCode() == KeyEvent.VK_UP) {
+        if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) {
             interaction.move(0, 0.05);
         }
-        if (e.getKeyChar() == 's' || e.getKeyCode() == KeyEvent.VK_DOWN) {
+        if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) {
             interaction.move(0, -0.05);
         }
-        if (e.getKeyChar() == 'a' || e.getKeyCode() == KeyEvent.VK_LEFT) {
+        if (e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT) {
             interaction.move(-0.05, 0);
         }
-        if (e.getKeyChar() == 'd' || e.getKeyCode() == KeyEvent.VK_RIGHT) {
+        if (e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT) {
             interaction.move(0.05, 0);
         }
     }

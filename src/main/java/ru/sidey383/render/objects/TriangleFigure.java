@@ -4,9 +4,8 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import ru.sidey383.math.Vector;
 import ru.sidey383.math.Vector3;
-import ru.sidey383.math.Vector3Record;
 import ru.sidey383.render.linemodel.model.Pair;
-import ru.sidey383.render.raytrace.CalculationUtils;
+import ru.sidey383.math.CalculationUtils;
 import ru.sidey383.render.raytrace.IntersectionInfo;
 import ru.sidey383.render.raytrace.Ray;
 
@@ -36,12 +35,12 @@ public class TriangleFigure implements Figure {
         this.c = c;
         this.diffuse = diffuse;
         this.specular = specular;
-        this.max = new Vector3Record(
+        this.max = new Vector3(
                 Math.max(Math.max(a.x(), b.x()), c.x()),
                 Math.max(Math.max(a.y(), b.y()), c.y()),
                 Math.max(Math.max(a.z(), b.z()), c.z())
         );
-        this.min = new Vector3Record(
+        this.min = new Vector3(
                 Math.min(Math.min(a.x(), b.x()), c.x()),
                 Math.min(Math.min(a.y(), b.y()), c.y()),
                 Math.min(Math.min(a.z(), b.z()), c.z())

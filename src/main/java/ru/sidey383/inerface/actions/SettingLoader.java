@@ -1,7 +1,9 @@
 package ru.sidey383.inerface.actions;
 
 import ru.sidey383.configuration.RenderConfigurationRecord;
+import ru.sidey383.configuration.STLModelLoader;
 import ru.sidey383.configuration.SceneConfigurationRecord;
+import ru.sidey383.math.Vector3;
 import ru.sidey383.model.ApplicationParameters;
 import ru.sidey383.render.camera.EditableCamera;
 
@@ -22,6 +24,7 @@ public class SettingLoader {
     private final Supplier<Dimension> dimensionSupplier;
     private static final FileNameExtensionFilter renderFilter = new FileNameExtensionFilter("Render", "render");
     private static final FileNameExtensionFilter sceneFilter = new FileNameExtensionFilter("Scene", "scene");
+    private static final FileNameExtensionFilter stlFilter = new FileNameExtensionFilter("STL", "stl");
 
     public SettingLoader(ApplicationParameters parameters, Runnable sceneUpdate, Supplier<Dimension> dimensionSupplier) {
         this.parameters = parameters;
@@ -35,6 +38,22 @@ public class SettingLoader {
         fileChooser.addChoosableFileFilter(renderFilter);
         load(fileChooser, component);
     }
+
+    public void loadSTL(JComponent component) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(stlFilter);
+        int res = fileChooser.showOpenDialog(component);
+        if (res == JFileChooser.APPROVE_OPTION) {
+            STLModelLoader loader = new STLModelLoader(new Vector3(0.5, 0.5, 0.5), new Vector3(0.5, 0.5, 0.5), 10);
+            try (InputStream is = new FileInputStream(fileChooser.getSelectedFile())) {
+                parameters.getSceneState().setObjects(loader.readSTL(is));
+                JOptionPane.showMessageDialog(component, "STL file loaded");
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(component, "Can't load STL file");
+            }
+        }
+    }
+
 
     public void loadRender(JComponent component) {
         JFileChooser fileChooser = new JFileChooser();

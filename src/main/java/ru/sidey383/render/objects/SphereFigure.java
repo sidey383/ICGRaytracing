@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import ru.sidey383.math.Vector;
 import ru.sidey383.math.Vector3;
-import ru.sidey383.math.Vector3Record;
 import ru.sidey383.render.linemodel.model.Pair;
 import ru.sidey383.render.linemodel.model.SphereLineSupplier;
 import ru.sidey383.render.raytrace.IntersectionInfo;
@@ -36,8 +35,8 @@ public final class SphereFigure implements Figure {
         this.specular = specular;
         this.power = power;
         this.supplier = new SphereLineSupplier(position, radius);
-        this.min = new Vector3Record(position.x() - radius, position.y() - radius, position.z() - radius);
-        this.max = new Vector3Record(position.x() + radius, position.y() + radius, position.z() + radius);
+        this.min = new Vector3(position.x() - radius, position.y() - radius, position.z() - radius);
+        this.max = new Vector3(position.x() + radius, position.y() + radius, position.z() + radius);
     }
 
     @Override

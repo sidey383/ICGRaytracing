@@ -20,11 +20,11 @@ public class NormalRaytraceController extends AbstractRaytraceController {
                     Vector3 color = colors[y][x];
                     if (color == null)
                         continue;
-                    int r = (int) (Math.pow(color.get(0) / maxColor, gamma) * 255);
-                    int g = (int) (Math.pow(color.get(1) / maxColor, gamma) * 255);
-                    int b = (int) (Math.pow(color.get(2) / maxColor, gamma) * 255);
+                    int r = (int) (Math.pow(color.x() / maxColor, gamma) * 255);
+                    int g = (int) (Math.pow(color.y() / maxColor, gamma) * 255);
+                    int b = (int) (Math.pow(color.z() / maxColor, gamma) * 255);
                     int rgb = (r & 0xFF) << 16 | (g & 0xFF) << 8 | (b & 0xFF);
-                    image.setRGB(x, y, rgb);
+                    image.setRGB(x, image.getHeight() - y - 1, rgb);
                 }
             }
         }

@@ -1,10 +1,9 @@
 package ru.sidey383;
 
 import ru.sidey383.configuration.Quality;
+import ru.sidey383.math.Vector3;
 import ru.sidey383.render.linemodel.model.Pair;
 import ru.sidey383.math.Vector;
-import ru.sidey383.math.Vector3;
-import ru.sidey383.math.Vector3Record;
 import ru.sidey383.math.VectorRecord;
 
 import java.io.IOException;
@@ -18,15 +17,15 @@ public class ConfigurationUtility {
     public static Vector3 readVector(String str) {
         String[] values = str.split("\\s+");
         if (values.length != 3) throw new IllegalArgumentException("Vector must have 3 components");
-        return new Vector3Record(Double.parseDouble(values[0]), Double.parseDouble(values[1]), Double.parseDouble(values[2]));
+        return new Vector3(Double.parseDouble(values[0]), Double.parseDouble(values[1]), Double.parseDouble(values[2]));
     }
 
     public static Pair<Vector3> readVectorPair(String str) {
         String[] values = str.split("\\s+");
         if (values.length != 6) throw new IllegalArgumentException("Vector pair must have 6 components");
         return new Pair<>(
-                new Vector3Record(Double.parseDouble(values[0]), Double.parseDouble(values[1]), Double.parseDouble(values[2])),
-                new Vector3Record(Double.parseDouble(values[3]), Double.parseDouble(values[4]), Double.parseDouble(values[5]))
+                new Vector3(Double.parseDouble(values[0]), Double.parseDouble(values[1]), Double.parseDouble(values[2])),
+                new Vector3(Double.parseDouble(values[3]), Double.parseDouble(values[4]), Double.parseDouble(values[5]))
         );
     }
 
@@ -44,8 +43,8 @@ public class ConfigurationUtility {
         String[] values = str.split("\\s+");
         if (values.length != 7) throw new IllegalArgumentException("Material must have 8 components");
         return new MaterialInfo(
-                new Vector3Record(Double.parseDouble(values[0]), Double.parseDouble(values[1]), Double.parseDouble(values[2])),
-                new Vector3Record(Double.parseDouble(values[3]), Double.parseDouble(values[4]), Double.parseDouble(values[5])),
+                new Vector3(Double.parseDouble(values[0]), Double.parseDouble(values[1]), Double.parseDouble(values[2])).mul(1.0/255.0),
+                new Vector3(Double.parseDouble(values[3]), Double.parseDouble(values[4]), Double.parseDouble(values[5])).mul(1.0/255.0),
                 Double.parseDouble(values[6])
         );
     }
@@ -60,11 +59,11 @@ public class ConfigurationUtility {
 
 
     public static double ranged(double v) {
-        return Math.max(1, Math.min(0, v));
+        return Math.min(1, Math.max(0, v));
     }
 
     public static Vector3 ranged(Vector3 v) {
-        return new Vector3Record(ranged(v.x()), ranged(v.y()), ranged(v.z()));
+        return new Vector3(ranged(v.x()), ranged(v.y()), ranged(v.z()));
     }
 
     public static double readValue(String str) {

@@ -2,9 +2,8 @@ package ru.sidey383.configuration;
 
 import ru.sidey383.ConfigurationUtility;
 import ru.sidey383.ParseIterator;
-import ru.sidey383.render.linemodel.model.Pair;
 import ru.sidey383.math.Vector3;
-import ru.sidey383.math.Vector3Record;
+import ru.sidey383.render.linemodel.model.Pair;
 import ru.sidey383.render.objects.*;
 import ru.sidey383.render.objects.LightSource;
 
@@ -38,7 +37,7 @@ public record SceneConfigurationRecord(Vector3 ambient, List<LightSource> lights
             if (vals.length != 4)
                 throw new IllegalArgumentException("Figure header must have 4 values");
             String type = vals[0];
-            Vector3 first = new Vector3Record(Double.parseDouble(vals[1]), Double.parseDouble(vals[2]), Double.parseDouble(vals[3]));
+            Vector3 first = new Vector3(Double.parseDouble(vals[1]), Double.parseDouble(vals[2]), Double.parseDouble(vals[3]));
             if (type.equalsIgnoreCase("sphere")) {
                 if (!lines.hasNext())
                     throw new IllegalArgumentException("No radius for sphere");

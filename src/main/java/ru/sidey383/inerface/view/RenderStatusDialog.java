@@ -9,39 +9,56 @@ import java.io.StringWriter;
 
 public class RenderStatusDialog extends JDialog {
 
-    private final JProgressBar progressBar;
-    private final JTextField errorField;
-    private final JLabel isRunning;
-    private final JLabel isComplete;
-    private final JLabel isFailed;
+    private final JProgressBar progressBar = new JProgressBar();
+    private final JTextField errorField = new JTextField();
+    private final JLabel isRunning = new JLabel("Not running");
+    private final JLabel isComplete = new JLabel("Not complete");
+    private final JLabel isFailed = new JLabel("Not failed");
+    private Timer timer;
+    private Long endTime;
+    private Long startTime;
+    private final RaytracingRender render;
 
-    public RenderStatusDialog(RaytracingRender.RenderStatus status, Runnable interrupt) {
+    public RenderStatusDialog(RaytracingRender render, Runnable interrupt) {
         setTitle("Render status");
-        errorField = new JTextField();
+        this.render = render;
         errorField.setEditable(false);
-        progressBar = new JProgressBar();
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
-        isRunning = new JLabel();
-        isComplete = new JLabel();
-        isFailed = new JLabel();
         JButton interruptButton = new JButton("Interrupt");
         interruptButton.addActionListener((a) -> interrupt.run());
         add(interruptButton);
+        progressBar.setAlignmentY(0.5f);
+        isComplete.setAlignmentY(0.5f);
+        isRunning.setAlignmentY(0.5f);
+        isFailed.setAlignmentY(0.5f);
+        errorField.setAlignmentY(0.5f);
         add(progressBar);
         add(isComplete);
         add(isRunning);
         add(isFailed);
-        acceptStatus(status);
         pack();
         setMinimumSize(new Dimension(300, 200));
+    }
 
+    public void showStatus() {
+        startTime = System.currentTimeMillis();
+        timer = new Timer(100, (a) -> {
+            acceptStatus(render.getStatus());
+        });
+        timer.start();
+        setAlwaysOnTop(true);
+        setVisible(true);
+    }
+
+    public void stop() {
+        timer.stop();
+        setVisible(false);
     }
 
     public void acceptStatus(RaytracingRender.RenderStatus status) {
         progressBar.setValue(status.completeCount());
         progressBar.setMaximum(status.totalCount());
         isRunning.setText(status.isRunning() ? "Running" : "Not running");
-        isComplete.setText(status.isComplete() ? "Complete" : "Not complete");
         isFailed.setText(status.isFailed() ? "Failed" : "Not failed");
         if (status.error() != null) {
             StringWriter sw = new StringWriter();
@@ -52,6 +69,25 @@ public class RenderStatusDialog extends JDialog {
             add(errorField);
             pack();
             setMinimumSize(new Dimension(300, 200));
+        }
+        if (endTime != null) {
+            if (System.currentTimeMillis() - endTime > 2000) {
+                timer.stop();
+                if (status.isComplete()) {
+                    setVisible(false);
+                }
+            }
+        } else {
+            if (!status.isRunning()) {
+                endTime = System.currentTimeMillis();
+                if (status.isComplete())
+                    isComplete.setText("Complete in " + (endTime - startTime) + "ms");
+                if (status.isFailed())
+                    isComplete.setText("Failed in " + (endTime - startTime) + "ms");
+                remove(progressBar);
+                revalidate();
+                repaint();
+            }
         }
     }
 

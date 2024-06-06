@@ -93,7 +93,7 @@ public class SphereLineSupplier implements LinesSupplier {
                 }
             }
         }
-        Matrix matrix = MatrixTransformation.getTransposition(center.get(0), center.get(1), center.get(2));
+        Matrix matrix = MatrixTransformation.getTransposition(center.x(), center.y(), center.z());
         for (int rot = 0; rot < m1 * m; rot++) {
             if (rot % m1 == 0) {
                 for (int i = 0; i <= partCount * partSize; i++) {

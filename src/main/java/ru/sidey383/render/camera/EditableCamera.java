@@ -3,7 +3,6 @@ package ru.sidey383.render.camera;
 import ru.sidey383.configuration.RenderConfigurationRecord;
 import ru.sidey383.math.QuaternionRotation;
 import ru.sidey383.math.Vector3;
-import ru.sidey383.math.Vector3Record;
 import ru.sidey383.render.objects.Figure;
 
 import java.util.List;
@@ -28,10 +27,17 @@ public class EditableCamera implements Camera {
         this.far = configuration.far();
     }
 
+    private static Vector3 fixUp(Vector3 up, Vector3 view, Vector3 eye) {
+        Vector3 dir = view.sub(eye);
+        Vector3 right = dir.cross(up);
+        return right.cross(dir).normalize();
+
+    }
+
     public EditableCamera(List<? extends Figure> objects, int width, int height) {
         if (objects.isEmpty()) {
-            this.eye = new Vector3Record(0, 0, -10);
-            this.view = new Vector3Record(0, 0, 0);
+            this.eye = new Vector3(0, 0, -10);
+            this.view = new Vector3(0, 0, 0);
             this.up = Vector3.Z;
             this.height = 1;
             this.near = 1;
@@ -41,25 +47,24 @@ public class EditableCamera implements Camera {
         Vector3 min = objects.get(0).min();
         Vector3 max = objects.get(0).max();
         for (Figure object : objects) {
-            min = new Vector3Record(
+            min = new Vector3(
                     Math.min(min.x(), object.min().x()),
                     Math.min(min.y(), object.min().y()),
                     Math.min(min.z(), object.min().z())
             );
-            max = new Vector3Record(
+            max = new Vector3(
                     Math.max(max.x(), object.max().x()),
                     Math.max(max.y(), object.max().y()),
                     Math.max(max.z(), object.max().z())
             );
         }
-        Vector3 center = min.add(max).mul(0.5);
+        this.view = min.add(max).mul(0.5);
         Vector3 add = max.sub(min).mul(0.05);
         min = min.add(add.mul(-1));
         max = max.add(add);
-        this.view = center;
         this.up = Vector3.Z;
-        this.eye = new Vector3Record(
-                min.x() - Math.max(max.z() - min.z(), max.y() - min.y()) * 0.866,
+        this.eye = new Vector3(
+                min.x() - Math.max(max.z() - min.z(), max.y() - min.y()) * Math.sqrt(3) / 2,
                 this.view.y(),
                 this.view.z()
         );
@@ -71,8 +76,8 @@ public class EditableCamera implements Camera {
     }
 
     public EditableCamera(Vector3 eye, Vector3 view, Vector3 up, double height, double near, double far) {
-        this.eye = eye.normalize();
-        this.view = view.normalize();
+        this.eye = eye;
+        this.view = view;
         Vector3 dir = view.sub(eye);
         Vector3 right = dir.cross(up);
         this.up = right.cross(dir).normalize();
@@ -83,8 +88,13 @@ public class EditableCamera implements Camera {
 
     public void goForward(double val) {
         if (val > 0) {
-            val = Math.min(view.sub(eye).length() - 0.1, val);
-            eye = eye.add(dir().mul(val));
+            Vector3 dir = view.sub(eye);
+            double dirLen = dir.length();
+            if (dirLen - val < 0.5) {
+                val = val - 0.5;
+            }
+            dir = dir.normalize();
+            eye = eye.add(dir.mul(val));
         } else {
             eye = eye.add(dir().mul(val));
         }
@@ -97,17 +107,20 @@ public class EditableCamera implements Camera {
     }
 
     public void zoom(double value) {
-        near = near * Math.pow(1.1, value);
+        near = Math.min(far/2, Math.max(0.1, near * Math.pow(2, value)));
     }
 
     public void rotate(double xRotation, double yRotation) {
-        QuaternionRotation xRot = new QuaternionRotation(up(), xRotation);
-        QuaternionRotation yRot = new QuaternionRotation(right(), yRotation);
-        QuaternionRotation rot = xRot.mult(yRot);
+        QuaternionRotation rot = QuaternionRotation.IDENTITY;
+        if (xRotation != 0)
+            rot = rot.mult(new QuaternionRotation(up(), xRotation));
+        if (yRotation != 0)
+            rot = rot.mult(new QuaternionRotation(right(), -yRotation));
         Vector3 e = eye.sub(view);
-        e = rot.mult(e);
+        e = rot.rotate(e);
         eye = e.add(view);
-        up = rot.mult(up).normalize();
+        up = rot.rotate(up).normalize();
+        up = fixUp(up, view, eye);
     }
 
     @Override
@@ -174,4 +187,15 @@ public class EditableCamera implements Camera {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "EditableCamera{" +
+               "eye=" + eye +
+               ", view=" + view +
+               ", up=" + up +
+               ", height=" + height +
+               ", near=" + near +
+               ", far=" + far +
+               '}';
+    }
 }

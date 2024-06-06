@@ -2,11 +2,13 @@ package ru.sidey383.math;
 
 public record QuaternionRotation(double x, double y, double z, double w) {
 
+    public static final QuaternionRotation IDENTITY = new QuaternionRotation(0, 0, 0, 1);
+
     public QuaternionRotation(Vector3 v, double angle) {
         this(
-                v.get(0) / v.length() * Math.sin(angle / 2),
-                v.get(1) / v.length() * Math.sin(angle / 2),
-                v.get(2) / v.length() * Math.sin(angle / 2),
+                v.x() / v.length() * Math.sin(angle / 2),
+                v.y() / v.length() * Math.sin(angle / 2),
+                v.z() / v.length() * Math.sin(angle / 2),
                 Math.cos(angle / 2)
         );
     }
@@ -54,12 +56,26 @@ public record QuaternionRotation(double x, double y, double z, double w) {
         });
     }
 
-    public Vector3 mult(Vector3 b) {
-        return new Vector3Record(
+    public QuaternionRotation mult(Vector3 b) {
+        return new QuaternionRotation(
                 w * b.x() + y * b.z() - z * b.y(),
                 w * b.y() - x * b.z() + z * b.x(),
-                w * b.z() + x * b.y() - y * b.x()
+                w * b.z() + x * b.y() - y * b.x(),
+                -x * b.x() - y * b.y() - z * b.z()
         );
+    }
+
+    public QuaternionRotation invert() {
+        return new QuaternionRotation(-x, -y, -z, w);
+    }
+
+    public Vector3 rotate(Vector3 v) {
+        double len = v.length();
+        return mult(v).mult(invert()).toVector3().mul(len);
+    }
+
+    private Vector3 toVector3() {
+        return new Vector3(x, y, z);
     }
 
     public QuaternionRotation mult(QuaternionRotation b) {

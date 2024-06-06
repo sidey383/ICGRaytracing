@@ -15,9 +15,10 @@ public class PreviewSceneView extends JPanel implements CameraInteractions {
     private final ApplicationParameters parameters;
 
     public PreviewSceneView(ApplicationParameters parameters) {
-        this.parameters = parameters;;
+        this.parameters = parameters;
         ShowFrameActionListener listener = new ShowFrameActionListener(this);
         addMouseListener(listener);
+        setFocusable(true);
         addMouseMotionListener(listener);
         addMouseWheelListener(listener);
         addKeyListener(listener);

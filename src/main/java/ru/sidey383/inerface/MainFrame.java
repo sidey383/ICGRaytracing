@@ -39,9 +39,12 @@ public class MainFrame extends JFrame implements SceneHolder {
     private final JMenuItem openScene = new JMenuItem("Open scene");
     private final JMenuItem loadRender = new JMenuItem("Load render settings");
     private final JMenuItem saveRender = new JMenuItem("Save render settings");
+    private final JMenuItem loadSTLModel = new JMenuItem("Load STL model");
     private final JMenuItem about = new JMenuItem("About");
     private final AboutDialog aboutDialog = new AboutDialog();
-
+    private final JMenu debug = new JMenu("Debug");
+    private final JMenuItem drawLines = new JMenuItem("Draw lines");
+    private final JMenuItem hideLines = new JMenuItem("Hinde lines");
     private final SettingLoader settingLoader;
     private final SettingSaver settingSaver;
 
@@ -53,7 +56,6 @@ public class MainFrame extends JFrame implements SceneHolder {
         settingLoader = new SettingLoader(parameters, this::update, () -> this.getActive().getSize());
         setSizeAndPosition();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setFocusable(true);
         buildMenu();
         setJMenuBar(menuBar);
         add(previewSceneView, BorderLayout.CENTER);
@@ -75,6 +77,8 @@ public class MainFrame extends JFrame implements SceneHolder {
         loadRender.addActionListener((a) -> settingLoader.loadRender(getActive()));
         filesItem.add(saveRender);
         saveRender.addActionListener((a) -> settingSaver.saveRender(getActive()));
+        filesItem.add(loadSTLModel);
+        loadSTLModel.addActionListener((a) -> settingLoader.loadSTL(getActive()));
         sceneItem.add(previewItem);
         previewItem.addActionListener((a) -> setPreview());
         sceneItem.add(renderItem);
@@ -86,12 +90,18 @@ public class MainFrame extends JFrame implements SceneHolder {
             Dimension d = getActive().getSize();
             parameters.cameraInit(d.width, d.height);
         });
-        menuBar.add(filesItem);
-        menuBar.add(sceneItem);
+
+        debug.add(drawLines);
+        drawLines.addActionListener((a) -> getRenderSceneView().ifPresent(d -> d.setDrawLines(true)));
+        debug.add(hideLines);
+        hideLines.addActionListener((a) -> getRenderSceneView().ifPresent(d -> d.setDrawLines(false)));
 
         about.addActionListener(this::aboutAction);
         about.setMaximumSize(about.getPreferredSize());
         about.setBackground(Color.WHITE);
+        menuBar.add(filesItem);
+        menuBar.add(sceneItem);
+        menuBar.add(debug);
         menuBar.add(about);
     }
 
@@ -142,7 +152,7 @@ public class MainFrame extends JFrame implements SceneHolder {
 
     private void update() {
         if (renderSceneView != null) {
-            renderSceneView.updateGamma();
+            renderSceneView.updateImage();
         } else {
             previewSceneView.repaint();
         }

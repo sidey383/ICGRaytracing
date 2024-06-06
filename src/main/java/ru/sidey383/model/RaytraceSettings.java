@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import ru.sidey383.configuration.Quality;
 import ru.sidey383.math.Vector3;
-import ru.sidey383.math.Vector3Record;
+import ru.sidey383.math.Vector3;
 
 @Getter
 @Setter
@@ -20,8 +20,8 @@ public class RaytraceSettings {
     private int traceDeep;
 
     public RaytraceSettings() {
-        background = new Vector3Record(0, 0, 0.5);
-        ambient = new Vector3Record(0.1, 0.1, 0.1);
+        background = new Vector3(0, 0, 0.5);
+        ambient = new Vector3(0.1, 0.1, 0.1);
         quality = Quality.NORMAL;
         gamma = 1;
         traceDeep = 3;

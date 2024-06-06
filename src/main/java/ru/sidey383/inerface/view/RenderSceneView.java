@@ -3,6 +3,7 @@ package ru.sidey383.inerface.view;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import ru.sidey383.model.ApplicationParameters;
+import ru.sidey383.render.linemodel.paint.LinesPainter;
 import ru.sidey383.render.raytrace.RaytracingRender;
 import ru.sidey383.render.raytrace.RaytraceConfiguration;
 
@@ -17,9 +18,10 @@ public class RenderSceneView extends JPanel {
     private final RaytracingRender raytracing;
     private final BufferedImage image;
     private ApplicationParameters parameters;
-    private final Timer statusUpdateTimer;
     private final Timer imageUpdateTimer;
     private final RenderStatusDialog statusDialog;
+    private final LinesPainter linesPainter = new LinesPainter();
+    private boolean isDrawLines = false;
 
     @Getter
     @NotNull
@@ -39,10 +41,10 @@ public class RenderSceneView extends JPanel {
                 parameters.getRaytraceSettings().getAmbient(),
                 parameters.getRaytraceSettings().getBackground()
         );
-        raytracing = new RaytracingRender(configuration, Runtime.getRuntime().availableProcessors());
-        statusUpdateTimer = new Timer(100, this::updateStatus);
+        raytracing = new RaytracingRender(configuration, Runtime.getRuntime().availableProcessors() * 4);
         imageUpdateTimer = new Timer(1000 / 3, this::updateImage);
-        statusDialog = new RenderStatusDialog(raytracing.getStatus(), this::stopRender);
+        statusDialog = new RenderStatusDialog(raytracing, this::stopRender);
+        statusDialog.showStatus();
         setSizes();
         scrollPane = new JScrollPane(this, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
@@ -54,7 +56,6 @@ public class RenderSceneView extends JPanel {
 
     public void startRender() {
         raytracing.startRender(this::onComplete);
-        statusUpdateTimer.start();
         imageUpdateTimer.start();
         statusDialog.setAlwaysOnTop(true);
         statusDialog.setVisible(true);
@@ -62,6 +63,7 @@ public class RenderSceneView extends JPanel {
 
     public void stopRender() {
         raytracing.shutdown();
+        statusDialog.stop();
     }
 
     public void syncRepaint() {
@@ -72,9 +74,9 @@ public class RenderSceneView extends JPanel {
         );
     }
 
-    public void updateGamma() {
-        raytracing.drawImage(image, parameters.getRaytraceSettings().getGamma());
-        syncRepaint();
+    public void setDrawLines(boolean drawLines) {
+        this.isDrawLines = drawLines;
+        updateImage();
     }
 
     private void setSizes() {
@@ -84,26 +86,35 @@ public class RenderSceneView extends JPanel {
         setMinimumSize(new Dimension(image.getWidth(), image.getHeight()));
     }
 
-    public void updateStatus(ActionEvent e) {
-        statusDialog.acceptStatus(raytracing.getStatus());
-    }
-
     public BufferedImage getImage() {
         BufferedImage image = new BufferedImage(this.image.getWidth(), this.image.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-        raytracing.drawImage(image, parameters.getRaytraceSettings().getGamma());
+        drawOnImage(image);
         return image;
     }
 
-    private void updateImage(ActionEvent e) {
+    private void drawOnImage(BufferedImage image) {
         raytracing.drawImage(image, parameters.getRaytraceSettings().getGamma());
+        if (isDrawLines) {
+            Graphics2D gr = image.createGraphics();
+            gr.setColor(Color.BLACK);
+            linesPainter.drawOnlyLines(parameters.getCamera(), parameters.getSceneState().getObjects(), gr, image.getWidth(), image.getHeight());
+            gr.dispose();
+        }
+    }
+
+    private void updateImage(ActionEvent e) {
+        updateImage();
+    }
+
+    public void updateImage() {
+        drawOnImage(image);
         syncRepaint();
     }
 
     private void onComplete(RaytracingRender.RenderStatus status) {
         statusDialog.acceptStatus(status);
-        statusUpdateTimer.stop();
         imageUpdateTimer.stop();
-        raytracing.drawImage(image, parameters.getRaytraceSettings().getGamma());
+        drawOnImage(image);
         syncRepaint();
     }
 

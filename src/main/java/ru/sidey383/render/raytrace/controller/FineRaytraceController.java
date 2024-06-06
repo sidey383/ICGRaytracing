@@ -29,18 +29,20 @@ public class FineRaytraceController extends AbstractRaytraceController {
                         for (int fx = 0; fx < force; fx++) {
                             Vector3 color = this.colors[y * force + fy][x * force + fx];
                             if (color != null) {
-                                rf += Math.pow(color.get(0) / maxColor, gamma) * 255;
-                                gf += Math.pow(color.get(1) / maxColor, gamma) * 255;
-                                bf += Math.pow(color.get(2) / maxColor, gamma) * 255;
+                                rf += Math.pow(color.x() / maxColor, gamma) * 255;
+                                gf += Math.pow(color.y() / maxColor, gamma) * 255;
+                                bf += Math.pow(color.z() / maxColor, gamma) * 255;
                                 count++;
                             }
                         }
                     }
+                    if (count == 0)
+                        continue;
                     int r = (int) (rf / count);
                     int g = (int) (gf / count);
                     int b = (int) (bf / count);
                     int rgb = (r & 0xFF) << 16 | (g & 0xFF) << 8 | (b & 0xFF);
-                    image.setRGB(x, y, rgb);
+                    image.setRGB(x, image.getHeight() - y - 1, rgb);
                 }
             }
         }

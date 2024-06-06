@@ -3,11 +3,8 @@ package ru.sidey383.model;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
-import ru.sidey383.math.Vector3Record;
-import ru.sidey383.render.objects.BoxFigure;
-import ru.sidey383.render.objects.Figure;
-import ru.sidey383.render.objects.LightSource;
-import ru.sidey383.render.objects.SphereFigure;
+import ru.sidey383.math.Vector3;
+import ru.sidey383.render.objects.*;
 
 import java.util.List;
 
@@ -22,24 +19,27 @@ public class SceneState {
     public SceneState() {
         objects = List.of(
                 new SphereFigure(
-                        new Vector3Record(0, 0, 0),
+                        new Vector3(0, 0, 0),
                         1,
-                        new Vector3Record(1, 1, 1),
-                        new Vector3Record(0.5, 0.5, 0.5),
+                        new Vector3(1, 1, 1),
+                        new Vector3(0.5, 0.5, 0.5),
                         10
                 ),
-                new BoxFigure(
-                        new Vector3Record(-2, -2, -2),
-                        new Vector3Record(2, -2, 2),
-                        new Vector3Record(1, 1, 1),
-                        new Vector3Record(0.5, 0.5, 0.5),
+                new QuadrangleFigure(
+                        new Vector3(-1, -1, -1),
+                        new Vector3(1, -1, -1),
+                        new Vector3(1, 1, -1),
+                        new Vector3(-1, 1, -1),
+                        new Vector3(1, 1, 1),
+                        new Vector3(0.5, 0.5, 0.5),
                         10
+
                 )
         );
         light = List.of(
                 new LightSource(
-                        new Vector3Record(0, 5, -5),
-                        new Vector3Record(0, 1, 0)
+                        new Vector3(-40, 0, 0),
+                        new Vector3(0, 1, 0)
                 )
         );
     }

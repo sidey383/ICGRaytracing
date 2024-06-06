@@ -1,8 +1,6 @@
-package ru.sidey383.render.raytrace;
+package ru.sidey383.math;
 
-import ru.sidey383.math.Vector3;
-
-import java.util.Optional;
+import ru.sidey383.render.raytrace.Ray;
 
 public class CalculationUtils {
 

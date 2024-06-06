@@ -4,9 +4,8 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import ru.sidey383.math.Vector;
 import ru.sidey383.math.Vector3;
-import ru.sidey383.math.Vector3Record;
 import ru.sidey383.render.linemodel.model.Pair;
-import ru.sidey383.render.raytrace.CalculationUtils;
+import ru.sidey383.math.CalculationUtils;
 import ru.sidey383.render.raytrace.IntersectionInfo;
 import ru.sidey383.render.raytrace.Ray;
 
@@ -38,12 +37,12 @@ public class QuadrangleFigure implements Figure {
         this.diffuse = diffuse;
         this.specular = specular;
         this.power = power;
-        this.min = new Vector3Record(
+        this.min = new Vector3(
                 Math.min(Math.min(a.x(), b.x()), Math.min(c.x(), d.x())),
                 Math.min(Math.min(a.y(), b.y()), Math.min(c.y(), d.y())),
                 Math.min(Math.min(a.z(), b.z()), Math.min(c.z(), d.z()))
         );
-        this.max = new Vector3Record(
+        this.max = new Vector3(
                 Math.max(Math.max(a.x(), b.x()), Math.max(c.x(), d.x())),
                 Math.max(Math.max(a.y(), b.y()), Math.max(c.y(), d.y())),
                 Math.max(Math.max(a.z(), b.z()), Math.max(c.z(), d.z()))

@@ -11,7 +11,7 @@ public abstract class AbstractRaytraceController implements RaytraceController {
 
     private final FinalCamera camera;
     private final AtomicInteger completeCount;
-    private final Vector3 viewFlatness;
+    private final Vector3 dirFlatness;
     private final double width;
     private final double height;
     protected final int totalX;
@@ -28,19 +28,24 @@ public abstract class AbstractRaytraceController implements RaytraceController {
         colors = new Vector3[y][x];
         this.totalX = x;
         this.totalY = y;
-        viewFlatness = camera.dir().mul(camera.near());
-        this.height = camera.height();
-        this.width = x * camera.height() / y;
+        dirFlatness = camera.dir().mul(camera.near());
+        this.height = camera.height(y, x);
+        this.width = camera.width(y, x);
         completeCount = new AtomicInteger();
     }
 
     @Override
     public Ray getRay(int x, int y) {
+        Vector3 eye = camera.eye();
+        Vector3 right = camera.right();
+        right = right.mul((width * x / (totalX) - width / 2) / 2);
+        Vector3 up = camera.up();
+        up = up.mul((height * y / (totalY) - height / 2) / 2);
         return new Ray(
-                camera.eye(),
-                viewFlatness
-                        .add(camera.right().mul(width * x / totalX - width / 2))
-                        .add(camera.up().mul(-(height * y / totalY - height / 2)))
+                eye,
+                dirFlatness
+                        .add(right)
+                        .add(up)
 
         );
     }
@@ -56,6 +61,10 @@ public abstract class AbstractRaytraceController implements RaytraceController {
             throw new IllegalStateException("Point already colored");
         colors[y][x] = color;
         completeCount.incrementAndGet();
+    }
+
+    protected int calculateColor(Vector3 v, double gamma) {
+        return (int) (Math.pow(v.x() / maxColor, gamma) * 255);
     }
 
     public abstract void apply(BufferedImage image, double gamma);

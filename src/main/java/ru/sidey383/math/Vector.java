@@ -16,6 +16,4 @@ public interface Vector {
         return result;
     }
 
-    Vector clone();
-
 }

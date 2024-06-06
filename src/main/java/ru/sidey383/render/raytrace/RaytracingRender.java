@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.beans.IntrospectionException;
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -64,12 +65,12 @@ public class RaytracingRender {
 
     private static class CloseableScheduledThread implements Closeable, ThreadFactory {
         @Getter
-        private final ScheduledExecutorService executor;
+        private final ExecutorService executor;
 
-        private final AtomicLong count = new AtomicLong();
+        private final ThreadGroup group = new ThreadGroup("RaytracingWorker");
 
         public CloseableScheduledThread(int tc) {
-            this.executor = new ScheduledThreadPoolExecutor(tc, this);
+            this.executor = Executors.newFixedThreadPool(tc, this);
         }
 
         @Override
@@ -79,7 +80,7 @@ public class RaytracingRender {
 
         @Override
         public Thread newThread(@NotNull Runnable r) {
-            return new Thread(r, "RaytracingThread-" + count.getAndIncrement());
+            return new Thread(group, r);
         }
     }
 
@@ -96,8 +97,6 @@ public class RaytracingRender {
                 for (int y = 0; y < controller.totalY(); y++) {
                     for (int x = 0; x < controller.totalX(); x++) {
                         t.getExecutor().submit(new RayTraceTask(x, y, controller, configuration, latch));
-                        if (Thread.interrupted())
-                            throw new InterruptedException("Thread interrupted");
                     }
                 }
                 latch.await();
@@ -109,11 +108,15 @@ public class RaytracingRender {
                 onComplete.accept(getStatus());
             }
 
-        });
+        }, "RenderMonitor");
         if (!controllerThread.compareAndSet(null, monitor))
             onComplete.accept(getStatus());
         else
             monitor.start();
+    }
+
+    private void runThread() {
+
     }
 
     public RenderStatus getStatus() {
