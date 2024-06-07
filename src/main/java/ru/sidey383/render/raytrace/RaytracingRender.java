@@ -84,6 +84,12 @@ public class RaytracingRender {
         }
     }
 
+    private synchronized void catchException(Thread t, Throwable e) {
+        if (error.get() != null)
+            return;
+        error.set(e);
+    }
+
     public void startRender(Consumer<RenderStatus> onComplete) {
         Thread monitor = new Thread(() -> {
             synchronized (this) {
@@ -92,32 +98,74 @@ public class RaytracingRender {
                     return;
                 }
             }
-            try (CloseableScheduledThread t = new CloseableScheduledThread(this.threadCount)) {
+            try {
                 isRunning.set(true);
-                for (int y = 0; y < controller.totalY(); y++) {
-                    for (int x = 0; x < controller.totalX(); x++) {
-                        t.getExecutor().submit(new RayTraceTask(x, y, controller, configuration, latch));
+                List<RayTraceThread> threads = new ArrayList<>(this.threadCount);
+                AtomicInteger counter = new AtomicInteger(0);
+                for (int i = 0; i < this.threadCount; i++) {
+                    threads.add(new RayTraceThread(controller, configuration, counter));
+                }
+                threads.forEach(t -> t.setUncaughtExceptionHandler(this::catchException));
+                threads.forEach(Thread::start);
+                boolean isCompleteThreads = true;
+                for (RayTraceThread t : threads) {
+                    try {
+                        t.join();
+                        isCompleteThreads = isCompleteThreads && t.isComplete();
+                    } catch (InterruptedException e) {
+                        if (error.get() == null)
+                            error.set(e);
+                        for (RayTraceThread ti : threads) {
+                            ti.interrupt();
+                        }
                     }
                 }
-                latch.await();
                 isComplete.set(true);
-            } catch (Exception e) {
-                error.set(e);
+            } catch (Throwable t) {
+                error.set(t);
             } finally {
                 isRunning.set(false);
                 onComplete.accept(getStatus());
             }
-
-        }, "RenderMonitor");
+        });
         if (!controllerThread.compareAndSet(null, monitor))
             onComplete.accept(getStatus());
         else
             monitor.start();
     }
 
-    private void runThread() {
-
-    }
+//    public void startRender(Consumer<RenderStatus> onComplete) {
+//        Thread monitor = new Thread(() -> {
+//            synchronized (this) {
+//                if (isRunning.get()) {
+//                    onComplete.accept(getStatus());
+//                    return;
+//                }
+//            }
+//            try (CloseableScheduledThread t = new CloseableScheduledThread(this.threadCount)) {
+//                isRunning.set(true);
+//                for (int y = 0; y < controller.totalY(); y++) {
+//                    for (int x = 0; x < controller.totalX(); x++) {
+//                        t.getExecutor().submit(new RayTraceTask(x, y, controller, configuration, latch));
+//                        if (Thread.interrupted())
+//                            throw new InterruptedException();
+//                    }
+//                }
+//                latch.await();
+//                isComplete.set(true);
+//            } catch (Exception e) {
+//                error.set(e);
+//            } finally {
+//                isRunning.set(false);
+//                onComplete.accept(getStatus());
+//            }
+//
+//        }, "RenderMonitor");
+//        if (!controllerThread.compareAndSet(null, monitor))
+//            onComplete.accept(getStatus());
+//        else
+//            monitor.start();
+//    }
 
     public RenderStatus getStatus() {
         Throwable e = error.get();
@@ -133,7 +181,7 @@ public class RaytracingRender {
 
     public void shutdown() {
         Thread t = controllerThread.get();
-        if (t.isInterrupted())
+        if (t != null && !t.isInterrupted())
             t.interrupt();
     }
 
