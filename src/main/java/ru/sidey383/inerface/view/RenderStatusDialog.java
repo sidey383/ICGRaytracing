@@ -42,9 +42,7 @@ public class RenderStatusDialog extends JDialog {
 
     public void showStatus() {
         startTime = System.currentTimeMillis();
-        timer = new Timer(100, (a) -> {
-            acceptStatus(render.getStatus());
-        });
+        timer = new Timer(100, (a) -> acceptStatus(render.getStatus()));
         timer.start();
         setAlwaysOnTop(true);
         setVisible(true);
@@ -71,7 +69,7 @@ public class RenderStatusDialog extends JDialog {
             setMinimumSize(new Dimension(300, 200));
         }
         if (endTime != null) {
-            if (System.currentTimeMillis() - endTime > 2000) {
+            if (System.currentTimeMillis() - endTime > 5000) {
                 timer.stop();
                 if (status.isComplete()) {
                     setVisible(false);

@@ -4,13 +4,11 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import ru.sidey383.math.Vector;
 import ru.sidey383.math.Vector3;
-import ru.sidey383.math.Vector3;
 import ru.sidey383.render.linemodel.model.Pair;
 import ru.sidey383.render.raytrace.IntersectionInfo;
 import ru.sidey383.render.raytrace.Ray;
 
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Accessors(fluent = true)
@@ -75,40 +73,36 @@ public final class BoxFigure implements Figure {
     }
 
     @Override
-    public Optional<IntersectionInfo> intersect(Ray ray) {
+    public IntersectionInfo intersect(Ray ray) {
         double minDist = Double.MAX_VALUE;
         Vector3 normal = null;
-        {
-            for (int i = 0; i < 3; i++) {
-                double dir = ray.direction().get(i);
-                if (dir == 0)
-                    continue;
-                double dist1 = (min.get(i) - ray.origin().get(i)) / dir;
-                double dist2 = (max.get(i) - ray.origin().get(i)) / dir;
-                double dist = Math.min(dist1, dist2);
-                if (dist >= minDist || dist <= 0)
-                    continue;
-                int cord1 = (i + 1) % 3;
-                int cord2 = (i + 1) % 3;
-                double val1 = ray.point(dist).get(cord1);
-                double val2 = ray.point(dist).get(cord2);
-                if (val1 >= min.get(cord1) && val1 <= max.get(cord1) && val2 >= min.get(cord2) && val2 <= max.get(cord2)) {
-                    minDist = dist;
-                    normal = switch (i) {
-                        case 0 -> new Vector3(dir > 0 ? -1 : 1, 0, 0);
-                        case 1 -> new Vector3(0, dir > 0 ? -1 : 1, 0);
-                        case 2 -> new Vector3(0, 0, dir > 0 ? -1 : 1);
-                        default -> throw new RuntimeException("Impossible");
-                    };
-                }
-
+        for (int i = 0; i < 3; i++) {
+            double dir = ray.direction().get(i);
+            if (dir == 0)
+                continue;
+            double dist1 = (min.get(i) - ray.origin().get(i)) / dir;
+            double dist2 = (max.get(i) - ray.origin().get(i)) / dir;
+            double dist = Math.min(dist1, dist2);
+            if (dist >= minDist || dist <= 0)
+                continue;
+            int cord1 = (i + 1) % 3;
+            int cord2 = (i + 1) % 3;
+            double val1 = ray.point(dist).get(cord1);
+            double val2 = ray.point(dist).get(cord2);
+            if (val1 >= min.get(cord1) && val1 <= max.get(cord1) && val2 >= min.get(cord2) && val2 <= max.get(cord2)) {
+                minDist = dist;
+                normal = switch (i) {
+                    case 0 -> new Vector3(dir > 0 ? -1 : 1, 0, 0);
+                    case 1 -> new Vector3(0, dir > 0 ? -1 : 1, 0);
+                    case 2 -> new Vector3(0, 0, dir > 0 ? -1 : 1);
+                    default -> throw new RuntimeException("Impossible");
+                };
             }
         }
         if (normal == null)
-            return Optional.empty();
+            return null;
         else
-            return Optional.of(new IntersectionInfo(minDist, normal, diffuse, specular, power));
+            return new IntersectionInfo(minDist, normal, diffuse, specular, power);
     }
-
 
 }

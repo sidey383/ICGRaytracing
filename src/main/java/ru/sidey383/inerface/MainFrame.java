@@ -1,10 +1,6 @@
 package ru.sidey383.inerface;
 
-import ru.sidey383.inerface.actions.AboutDialog;
-import ru.sidey383.inerface.actions.RenderSettingsDialog;
-import ru.sidey383.inerface.actions.SettingLoader;
-import ru.sidey383.inerface.actions.SettingSaver;
-import ru.sidey383.inerface.view.PreviewSceneView;
+import ru.sidey383.inerface.actions.*;
 import ru.sidey383.inerface.view.RenderSceneView;
 import ru.sidey383.model.ApplicationParameters;
 
@@ -13,10 +9,11 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Optional;
 
-public class MainFrame extends JFrame implements SceneHolder {
+public class MainFrame extends JFrame {
 
     public static void main(String[] args) {
         new MainFrame();
@@ -24,14 +21,11 @@ public class MainFrame extends JFrame implements SceneHolder {
 
     private final ApplicationParameters parameters = new ApplicationParameters();
 
-    private final PreviewSceneView previewSceneView = new PreviewSceneView(parameters);
-
-    private RenderSceneView renderSceneView = null;
+    private final ErrorDialog errorDialog = new ErrorDialog("Main frame");
 
     private final JMenuBar menuBar = new JMenuBar();
     private final JMenu sceneItem = new JMenu("Scene");
-    private final JRadioButtonMenuItem previewItem = new JRadioButtonMenuItem("Preview");
-    private final JRadioButtonMenuItem renderItem = new JRadioButtonMenuItem("Render");
+    private final SceneController sceneController;
     private final JMenuItem renderSettings = new JMenuItem("Render settings");
     private final JMenuItem initCamera = new JMenuItem("Init camera");
     private final JMenu filesItem = new JMenu("Files");
@@ -52,22 +46,19 @@ public class MainFrame extends JFrame implements SceneHolder {
     public MainFrame() {
         super("ICGRaytracing");
         setLayout(new BorderLayout());
+        this.sceneController = new SceneController(parameters);
         settingSaver = new SettingSaver(parameters, () -> this.getActive().getSize());
         settingLoader = new SettingLoader(parameters, this::update, () -> this.getActive().getSize());
         setSizeAndPosition();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         buildMenu();
         setJMenuBar(menuBar);
-        add(previewSceneView, BorderLayout.CENTER);
+        add(sceneController, BorderLayout.CENTER);
         pack();
         setVisible(true);
     }
 
     private void buildMenu() {
-
-        ButtonGroup group = new ButtonGroup();
-        group.add(renderItem);
-        group.add(previewItem);
 
         filesItem.add(saveImage);
         saveImage.addActionListener(this::saveImageAction);
@@ -79,10 +70,8 @@ public class MainFrame extends JFrame implements SceneHolder {
         saveRender.addActionListener((a) -> settingSaver.saveRender(getActive()));
         filesItem.add(loadSTLModel);
         loadSTLModel.addActionListener((a) -> settingLoader.loadSTL(getActive()));
-        sceneItem.add(previewItem);
-        previewItem.addActionListener((a) -> setPreview());
-        sceneItem.add(renderItem);
-        renderItem.addActionListener((a) -> setRender());
+        sceneItem.add(sceneController.getPreviewItem());
+        sceneItem.add(sceneController.getRenderItem());
         sceneItem.add(renderSettings);
         renderSettings.addActionListener((a) -> new RenderSettingsDialog(parameters.getRaytraceSettings(), this::update));
         sceneItem.add(initCamera);
@@ -92,9 +81,9 @@ public class MainFrame extends JFrame implements SceneHolder {
         });
 
         debug.add(drawLines);
-        drawLines.addActionListener((a) -> getRenderSceneView().ifPresent(d -> d.setDrawLines(true)));
+        drawLines.addActionListener((a) -> sceneController.getRenderSceneView().ifPresent(d -> d.setDrawLines(true)));
         debug.add(hideLines);
-        hideLines.addActionListener((a) -> getRenderSceneView().ifPresent(d -> d.setDrawLines(false)));
+        hideLines.addActionListener((a) -> sceneController.getRenderSceneView().ifPresent(d -> d.setDrawLines(false)));
 
         about.addActionListener(this::aboutAction);
         about.setMaximumSize(about.getPreferredSize());
@@ -105,38 +94,8 @@ public class MainFrame extends JFrame implements SceneHolder {
         menuBar.add(about);
     }
 
-    private void setPreview() {
-        if (renderSceneView != null) {
-            renderSceneView.stopRender();
-            remove(renderSceneView.getScrollPane());
-            renderSceneView = null;
-        }
-        add(previewSceneView, BorderLayout.CENTER);
-        previewItem.setSelected(true);
-        revalidate();
-        previewSceneView.revalidate();
-        repaint();
-        previewSceneView.repaint();
-    }
-
-    private void setRender() {
-        if (renderSceneView != null) {
-            renderSceneView.stopRender();
-            remove(renderSceneView.getScrollPane());
-        }
-        renderSceneView = new RenderSceneView(parameters, previewSceneView.createImage());
-        remove(previewSceneView);
-        add(renderSceneView.getScrollPane(), BorderLayout.CENTER);
-        renderItem.setSelected(true);
-        revalidate();
-        repaint();
-        renderSceneView.startRender();
-        renderSceneView.revalidate();
-        renderSceneView.repaint();
-    }
-
     private JPanel getActive() {
-        return getRenderSceneView().map(r -> (JPanel) r).orElse(getPreviewSceneView());
+        return sceneController.getRenderSceneView().map(r -> (JPanel) r).orElse(sceneController.getPreviewSceneView());
     }
 
     private void aboutAction(ActionEvent e) {
@@ -151,33 +110,29 @@ public class MainFrame extends JFrame implements SceneHolder {
     }
 
     private void update() {
-        if (renderSceneView != null) {
-            renderSceneView.updateImage();
-        } else {
-            previewSceneView.repaint();
-        }
+        sceneController.getRenderSceneView().ifPresentOrElse(
+                RenderSceneView::updateImage,
+                () -> sceneController.getPreviewSceneView().repaint()
+        );
     }
 
     private void saveImageAction(ActionEvent e) {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(new FileNameExtensionFilter("PNG", "png"));
         if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            final BufferedImage image;
+            Optional<RenderSceneView> ors = sceneController.getRenderSceneView();
+            if (ors.isPresent()) {
+                image = ors.get().getImage();
+            } else {
+                image = sceneController.getPreviewSceneView().createImage();
+            }
             try {
-                ImageIO.write(renderSceneView.getImage(), "png", fileChooser.getSelectedFile());
+                ImageIO.write(image, "png", fileChooser.getSelectedFile());
             } catch (IOException ex) {
-                ex.printStackTrace();
+                errorDialog.show(ex);
             }
         }
     }
 
-
-    @Override
-    public Optional<RenderSceneView> getRenderSceneView() {
-        return Optional.ofNullable(renderSceneView);
-    }
-
-    @Override
-    public PreviewSceneView getPreviewSceneView() {
-        return previewSceneView;
-    }
 }

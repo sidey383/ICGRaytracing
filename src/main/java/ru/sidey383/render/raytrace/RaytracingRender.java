@@ -1,23 +1,16 @@
 package ru.sidey383.render.raytrace;
 
-import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.sidey383.render.raytrace.controller.FineRaytraceController;
 import ru.sidey383.render.raytrace.controller.NormalRaytraceController;
 import ru.sidey383.render.raytrace.controller.RaytraceController;
 import ru.sidey383.render.raytrace.controller.RoughRaytraceController;
 
 import java.awt.image.BufferedImage;
-import java.beans.IntrospectionException;
-import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -46,8 +39,6 @@ public class RaytracingRender {
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
     @NotNull
     private final AtomicReference<Throwable> error = new AtomicReference<>();
-    @NotNull
-    private final CountDownLatch latch;
 
     public RaytracingRender(RaytraceConfiguration configuration, int threadCount) {
         this.threadCount = threadCount;
@@ -60,28 +51,12 @@ public class RaytracingRender {
             case NORMAL ->
                     new NormalRaytraceController(configuration.width(), configuration.height(), configuration.camera());
         };
-        latch = new CountDownLatch(controller.total());
     }
 
-    private static class CloseableScheduledThread implements Closeable, ThreadFactory {
-        @Getter
-        private final ExecutorService executor;
-
-        private final ThreadGroup group = new ThreadGroup("RaytracingWorker");
-
-        public CloseableScheduledThread(int tc) {
-            this.executor = Executors.newFixedThreadPool(tc, this);
-        }
-
-        @Override
-        public void close() {
-            executor.shutdownNow();
-        }
-
-        @Override
-        public Thread newThread(@NotNull Runnable r) {
-            return new Thread(group, r);
-        }
+    private synchronized void catchException(Thread t, Throwable e) {
+        if (error.get() != null)
+            return;
+        error.set(e);
     }
 
     public void startRender(Consumer<RenderStatus> onComplete) {
@@ -92,31 +67,40 @@ public class RaytracingRender {
                     return;
                 }
             }
-            try (CloseableScheduledThread t = new CloseableScheduledThread(this.threadCount)) {
+            try {
                 isRunning.set(true);
-                for (int y = 0; y < controller.totalY(); y++) {
-                    for (int x = 0; x < controller.totalX(); x++) {
-                        t.getExecutor().submit(new RayTraceTask(x, y, controller, configuration, latch));
+                List<RayTraceThread> threads = new ArrayList<>(this.threadCount);
+                AtomicInteger counter = new AtomicInteger(0);
+                for (int i = 0; i < this.threadCount; i++) {
+                    threads.add(new RayTraceThread(controller, configuration, counter));
+                }
+                threads.forEach(t -> t.setUncaughtExceptionHandler(this::catchException));
+                threads.forEach(Thread::start);
+                boolean isCompleteThreads = true;
+                for (RayTraceThread t : threads) {
+                    try {
+                        t.join();
+                        isCompleteThreads = isCompleteThreads && t.isComplete();
+                    } catch (InterruptedException e) {
+                        if (error.get() == null)
+                            error.set(e);
+                        for (RayTraceThread ti : threads) {
+                            ti.interrupt();
+                        }
                     }
                 }
-                latch.await();
                 isComplete.set(true);
-            } catch (Exception e) {
-                error.set(e);
+            } catch (Throwable t) {
+                error.set(t);
             } finally {
                 isRunning.set(false);
                 onComplete.accept(getStatus());
             }
-
-        }, "RenderMonitor");
+        });
         if (!controllerThread.compareAndSet(null, monitor))
             onComplete.accept(getStatus());
         else
             monitor.start();
-    }
-
-    private void runThread() {
-
     }
 
     public RenderStatus getStatus() {
@@ -133,7 +117,7 @@ public class RaytracingRender {
 
     public void shutdown() {
         Thread t = controllerThread.get();
-        if (t.isInterrupted())
+        if (t != null && !t.isInterrupted())
             t.interrupt();
     }
 

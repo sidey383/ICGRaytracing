@@ -2,15 +2,14 @@ package ru.sidey383.render.objects;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import ru.sidey383.math.CalculationUtils;
 import ru.sidey383.math.Vector;
 import ru.sidey383.math.Vector3;
 import ru.sidey383.render.linemodel.model.Pair;
-import ru.sidey383.math.CalculationUtils;
 import ru.sidey383.render.raytrace.IntersectionInfo;
 import ru.sidey383.render.raytrace.Ray;
 
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Accessors(fluent = true)
@@ -61,11 +60,11 @@ public class TriangleFigure implements Figure {
     }
 
     @Override
-    public Optional<IntersectionInfo> intersect(Ray ray) {
+    public IntersectionInfo intersect(Ray ray) {
         Double d = CalculationUtils.triangleOneSideIntersect(ray, a, b, c, normal);
         if (d == null)
-            return Optional.empty();
+            return null;
         else
-            return Optional.of(new IntersectionInfo(d, normal, diffuse, specular, power));
+            return new IntersectionInfo(d, normal, diffuse, specular, power);
     }
 }

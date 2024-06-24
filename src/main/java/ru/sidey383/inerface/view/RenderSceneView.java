@@ -17,17 +17,19 @@ public class RenderSceneView extends JPanel {
     @Getter
     private final RaytracingRender raytracing;
     private final BufferedImage image;
-    private ApplicationParameters parameters;
+    private final ApplicationParameters parameters;
     private final Timer imageUpdateTimer;
     private final RenderStatusDialog statusDialog;
     private final LinesPainter linesPainter = new LinesPainter();
     private boolean isDrawLines = false;
-
-    @Getter
     @NotNull
-    private final JScrollPane scrollPane;
+    private JPanel currentPanel;
 
     public RenderSceneView(@NotNull ApplicationParameters parameters, @NotNull BufferedImage image) {
+        setLayout(new BorderLayout());
+        if (parameters.getRaytraceSettings().isCustomSize()) {
+            image = resize(image, parameters.getRaytraceSettings().getRenderWidth(), parameters.getRaytraceSettings().getRenderHeight());
+        }
         this.image = image;
         this.parameters = parameters;
         RaytraceConfiguration configuration = new RaytraceConfiguration(
@@ -46,8 +48,22 @@ public class RenderSceneView extends JPanel {
         statusDialog = new RenderStatusDialog(raytracing, this::stopRender);
         statusDialog.showStatus();
         setSizes();
-        scrollPane = new JScrollPane(this, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        setLayout(new BorderLayout());
+        currentPanel = new StaticImageViewer(image);
+        add(currentPanel, BorderLayout.CENTER);
 
+    }
+
+    private static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance( newH * img.getWidth() / img.getHeight(), newH , Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, img.getType());
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, newW, newH);
+        g2d.drawImage(tmp, (dimg.getWidth() - tmp.getWidth(null)) / 2, 0, null);
+        g2d.dispose();
+
+        return dimg;
     }
 
     public RenderSceneView(@NotNull ApplicationParameters parameters, int width, int height) {
@@ -68,9 +84,26 @@ public class RenderSceneView extends JPanel {
 
     public void syncRepaint() {
         SwingUtilities.invokeLater(() -> {
-            this.revalidate();
-            this.repaint();
-        }
+                    this.revalidate();
+                    remove(currentPanel);
+                    if (raytracing.getStatus().isRunning()) {
+                        currentPanel = new StaticImageViewer(image);
+                    } else {
+                        if (currentPanel instanceof FinalImageViewer fv) {
+                            currentPanel = new FinalImageViewer(image, fv.getViewXCenter(), fv.getViewYCenter(), fv.getZoom());
+                        } else {
+                            Dimension dim = getSize();
+                            if (dim == null || dim.width <= 0 || dim.height <= 0) {
+                                dim = new Dimension(1000, 1000);
+                            }
+                            currentPanel = new FinalImageViewer(image, dim.width, dim.height);
+                        }
+                    }
+                    add(currentPanel, BorderLayout.CENTER);
+                    currentPanel.setFocusable(true);
+                    currentPanel.requestFocus();
+                    this.repaint();
+                }
         );
     }
 
@@ -118,8 +151,4 @@ public class RenderSceneView extends JPanel {
         syncRepaint();
     }
 
-    @Override
-    public void paintComponent(Graphics g) {
-        g.drawImage(image, 0, 0, null);
-    }
 }

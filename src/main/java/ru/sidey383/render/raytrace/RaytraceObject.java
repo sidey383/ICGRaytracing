@@ -1,20 +1,21 @@
 package ru.sidey383.render.raytrace;
 
-import java.util.Optional;
+import org.jetbrains.annotations.Nullable;
 
 public interface RaytraceObject {
 
-    Optional<IntersectionInfo> intersect(Ray ray);
+    @Nullable
+    IntersectionInfo intersect(Ray ray);
 
     default RaytraceObject composition(RaytraceObject object) {
         return ray -> {
-            Optional<IntersectionInfo> info = RaytraceObject.this.intersect(ray);
-            if(info.isEmpty())
+            IntersectionInfo info1 = RaytraceObject.this.intersect(ray);
+            if(info1 == null)
                 return object.intersect(ray);
-            Optional<IntersectionInfo> info2 = object.intersect(ray);
-            if(info2.isEmpty())
-                return info;
-            return info.get().distance() < info2.get().distance() ? info : info2;
+            IntersectionInfo info2 = object.intersect(ray);
+            if(info2 == null)
+                return info1;
+            return info1.distance() < info2.distance() ? info1 : info2;
         };
     }
 

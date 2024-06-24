@@ -2,10 +2,6 @@ package ru.sidey383.math;
 
 public record Vector3(double x, double y, double z) implements Vector {
 
-    public Vector3(float x, float y, float z) {
-        this((double) x, (double) y, (double) z);
-    }
-
     public Vector3(float... val) {
         this(val[0], val[1], val[2]);
     }
@@ -36,6 +32,10 @@ public record Vector3(double x, double y, double z) implements Vector {
         return new Vector3(x + v.x, y + v.y, z + v.z);
     }
 
+    public Vector3 add(Vector3 v, double mul) {
+        return new Vector3(x + v.x * mul, y + v.y * mul, z + v.z * mul);
+    }
+
     public Vector3 add(double val) {
         return new Vector3(x + val, y + val, z + val);
     }
@@ -46,6 +46,10 @@ public record Vector3(double x, double y, double z) implements Vector {
 
     public Vector3 mul(Vector3 vector3) {
         return new Vector3(x * vector3.x, y * vector3.y, z * vector3.z);
+    }
+
+    public Vector3 mul(Vector3 vector3, double mul) {
+        return new Vector3(x * vector3.x * mul, y * vector3.y * mul, z * vector3.z * mul);
     }
 
     public Vector3 normalize() {
@@ -81,7 +85,6 @@ public record Vector3(double x, double y, double z) implements Vector {
         return Math.max(Math.max(a, b), c);
     }
 
-    @Deprecated
     public double get(int i) {
         return switch (i) {
             case 0 -> x;
