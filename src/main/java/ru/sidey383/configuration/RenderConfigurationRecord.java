@@ -2,9 +2,10 @@ package ru.sidey383.configuration;
 
 import ru.sidey383.math.Vector;
 import ru.sidey383.math.Vector3;
-import static ru.sidey383.ConfigurationUtility.*;
 
 import java.util.Iterator;
+
+import static ru.sidey383.ConfigurationUtility.*;
 
 public record RenderConfigurationRecord(
         Vector3 background,
@@ -17,8 +18,27 @@ public record RenderConfigurationRecord(
         double near,
         double far,
         double width,
-        double height
+        double height,
+        int renderWidth,
+        int renderHeight,
+        boolean customSizes
 ) {
+
+    public RenderConfigurationRecord(
+            Vector3 background,
+            double gamma,
+            int traceDepth,
+            Quality quality,
+            Vector3 eye,
+            Vector3 view,
+            Vector3 up,
+            double near,
+            double far,
+            double width,
+            double height
+    ) {
+        this(background, gamma, traceDepth, quality, eye, view, up, near,far, width, height, 1000, 1000, false);
+    }
 
     public static RenderConfigurationRecord parseConfiguration(String config) {
         Iterator<String> i = config.lines().iterator();

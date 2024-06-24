@@ -18,19 +18,11 @@ public class StaticImageViewer extends JPanel {
         Dimension dim = getSize();
         if (dim == null || dim.height <= 0 || dim.width <= 0)
             return;
-        float image_ratio = (float) image.getWidth() / image.getHeight();
-        float panel_ratio = (float) dim.width / dim.height;
-        int newWidth, newHeight;
-        if (image_ratio > panel_ratio) {
-            newWidth = dim.width;
-            newHeight = Math.round(newWidth / image_ratio);
-        }
-        else {
-            newHeight = dim.height;
-            newWidth = Math.round(newHeight * image_ratio);
-        }
+        int newHeight = dim.height;
+        int newWidth = dim.height * image.getWidth() / image.getHeight();
+        int x = (dim.width - newWidth) / 2;
         Graphics2D graphics2D = (Graphics2D) g.create();
-        graphics2D.drawImage(image, 0, 0, newWidth, newHeight, null);
+        graphics2D.drawImage(image, x, 0, newWidth, newHeight, null);
         graphics2D.dispose();
     }
 

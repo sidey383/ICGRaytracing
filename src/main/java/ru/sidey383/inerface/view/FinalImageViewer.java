@@ -72,8 +72,8 @@ public class FinalImageViewer extends JPanel implements KeyListener, MouseWheelL
     }
 
     public void moveImage(int x, int y) {
-        double viewXCenter = Math.min(1.5, Math.max(-0.5, this.viewXCenter + x / 30.0));
-        double viewYCenter = Math.min(1.5, Math.max(-0.5, this.viewYCenter + y / 30.0));
+        double viewXCenter = Math.min(1, Math.max(0, this.viewXCenter + x / 30.0));
+        double viewYCenter = Math.min(1, Math.max(0, this.viewYCenter + y / 30.0));
         if ((viewXCenter - 0.5)*(this.viewXCenter - 0.5) < 0)
             viewXCenter = 0.5;
         if ((viewYCenter - 0.5)*(this.viewYCenter - 0.5) < 0)

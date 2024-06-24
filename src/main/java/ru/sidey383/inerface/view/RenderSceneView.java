@@ -27,6 +27,9 @@ public class RenderSceneView extends JPanel {
 
     public RenderSceneView(@NotNull ApplicationParameters parameters, @NotNull BufferedImage image) {
         setLayout(new BorderLayout());
+        if (parameters.getRaytraceSettings().isCustomSize()) {
+            image = resize(image, parameters.getRaytraceSettings().getRenderWidth(), parameters.getRaytraceSettings().getRenderHeight());
+        }
         this.image = image;
         this.parameters = parameters;
         RaytraceConfiguration configuration = new RaytraceConfiguration(
@@ -49,6 +52,18 @@ public class RenderSceneView extends JPanel {
         currentPanel = new StaticImageViewer(image);
         add(currentPanel, BorderLayout.CENTER);
 
+    }
+
+    private static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance( newH * img.getWidth() / img.getHeight(), newH , Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, img.getType());
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, newW, newH);
+        g2d.drawImage(tmp, (dimg.getWidth() - tmp.getWidth(null)) / 2, 0, null);
+        g2d.dispose();
+
+        return dimg;
     }
 
     public RenderSceneView(@NotNull ApplicationParameters parameters, int width, int height) {

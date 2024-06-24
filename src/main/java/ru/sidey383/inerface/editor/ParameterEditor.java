@@ -20,6 +20,9 @@ public class ParameterEditor extends JDialog {
     private final IntegerParam traceDeep;
     private final DoubleParam gamma;
     private final OptionChooseParam<Quality> quality;
+    private final OptionChooseParam<RenderSizeProvider> sizeProvider;
+    private final IntegerParam renderWidth;
+    private final IntegerParam renderHeight;
     private final DoubleParam backgroundR;
     private final DoubleParam backgroundG;
     private final DoubleParam backgroundB;
@@ -50,6 +53,14 @@ public class ParameterEditor extends JDialog {
         ambientR = new DoubleParam("Ambient red", ambient.x(), 0, 10, 100);
         ambientG = new DoubleParam("Ambient red", ambient.y(), 0, 10, 100);
         ambientB = new DoubleParam("Ambient red", ambient.z(), 0, 10, 100);
+        sizeProvider = new OptionChooseParam<>(
+                "Render size provider",
+                renderConfiguration.customSizes() ? RenderSizeProvider.CONSTANTS : RenderSizeProvider.WINDOW,
+                List.of(RenderSizeProvider.values()),
+                List.of("Adaptive", "Constant")
+        );
+        renderHeight = new IntegerParam("Render height", renderConfiguration.renderHeight(), 100, 10000);
+        renderWidth = new IntegerParam("Render width", renderConfiguration.renderWidth(), 100, 10000);
         JButton apply = new JButton("Apply");
         apply.addActionListener(this::apply);
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
@@ -62,6 +73,9 @@ public class ParameterEditor extends JDialog {
         add(ambientR.editorComponent());
         add(ambientG.editorComponent());
         add(ambientB.editorComponent());
+        add(sizeProvider.editorComponent());
+        add(renderHeight.editorComponent());
+        add(renderWidth.editorComponent());
         add(apply);
         pack();
 
@@ -85,7 +99,10 @@ public class ParameterEditor extends JDialog {
                 camera.near(),
                 camera.far(),
                 camera.width(100, 100),
-                camera.height(100, 100)
+                camera.height(100, 100),
+                renderWidth.getValue(),
+                renderHeight.getValue(),
+                sizeProvider.getValue() == RenderSizeProvider.CONSTANTS
         );
         applyConfig.accept(rc, sc);
         this.setVisible(false);

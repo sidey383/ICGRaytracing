@@ -5,7 +5,6 @@ import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import ru.sidey383.configuration.Quality;
 import ru.sidey383.math.Vector3;
-import ru.sidey383.math.Vector3;
 
 @Getter
 @Setter
@@ -18,6 +17,9 @@ public class RaytraceSettings {
     private Quality quality;
     private double gamma;
     private int traceDeep;
+    private boolean isCustomSize;
+    private int renderWidth;
+    private int renderHeight;
 
     public RaytraceSettings() {
         background = new Vector3(0, 0, 0.5);
@@ -25,6 +27,9 @@ public class RaytraceSettings {
         quality = Quality.NORMAL;
         gamma = 1;
         traceDeep = 3;
+        isCustomSize =  false;
+        renderWidth = 1000;
+        renderHeight = 1000;
     }
 
 }
