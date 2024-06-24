@@ -1,5 +1,6 @@
 package ru.sidey383.inerface.view;
 
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -14,26 +15,37 @@ public class FinalImageViewer extends JPanel implements KeyListener, MouseWheelL
 
     @NotNull
     private final BufferedImage image;
-
+    @Getter
     private double viewXCenter;
-
+    @Getter
     private double viewYCenter;
-
+    @Getter
     private double zoom;
 
-    public FinalImageViewer(@NotNull BufferedImage image) {
+    public FinalImageViewer(@NotNull BufferedImage image, int width, int height) {
         setFocusable(true);
         requestFocus();
         this.image = image;
-        defaultScale();
+        defaultScale(width, height);
         addKeyListener(this);
         addMouseWheelListener(this);
     }
 
-    public void defaultScale() {
+    public FinalImageViewer(@NotNull BufferedImage image, double viewXCenter, double viewYCenter, double zoom) {
+        setFocusable(true);
+        requestFocus();
+        this.image = image;
+        addKeyListener(this);
+        addMouseWheelListener(this);
+        this.viewYCenter = viewYCenter;
+        this.viewXCenter = viewXCenter;
+        this.zoom = zoom;
+    }
+
+    public void defaultScale(int width, int height) {
         viewXCenter = 0.5;
         viewYCenter = 0.5;
-        zoom = 1;
+        zoom = height / (double) image.getHeight();
     }
 
     @Override

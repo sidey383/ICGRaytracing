@@ -89,7 +89,15 @@ public class RenderSceneView extends JPanel {
                     if (raytracing.getStatus().isRunning()) {
                         currentPanel = new StaticImageViewer(image);
                     } else {
-                        currentPanel = new FinalImageViewer(image);
+                        if (currentPanel instanceof FinalImageViewer fv) {
+                            currentPanel = new FinalImageViewer(image, fv.getViewXCenter(), fv.getViewYCenter(), fv.getZoom());
+                        } else {
+                            Dimension dim = getSize();
+                            if (dim == null || dim.width <= 0 || dim.height <= 0) {
+                                dim = new Dimension(1000, 1000);
+                            }
+                            currentPanel = new FinalImageViewer(image, dim.width, dim.height);
+                        }
                     }
                     add(currentPanel, BorderLayout.CENTER);
                     currentPanel.setFocusable(true);
