@@ -2,15 +2,14 @@ package ru.sidey383.render.objects;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import ru.sidey383.math.CalculationUtils;
 import ru.sidey383.math.Vector;
 import ru.sidey383.math.Vector3;
 import ru.sidey383.render.linemodel.model.Pair;
-import ru.sidey383.math.CalculationUtils;
 import ru.sidey383.render.raytrace.IntersectionInfo;
 import ru.sidey383.render.raytrace.Ray;
 
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Accessors(fluent = true)
@@ -78,7 +77,7 @@ public class QuadrangleFigure implements Figure {
     }
 
     @Override
-    public Optional<IntersectionInfo> intersect(Ray ray) {
+    public IntersectionInfo intersect(Ray ray) {
         Double dist1 = CalculationUtils.triangleIntersect(ray, a, b, c, firstNormal);
         Double dist2 = CalculationUtils.triangleIntersect(ray, a, c, d, secondNormal);
         final double dist;
@@ -121,10 +120,10 @@ public class QuadrangleFigure implements Figure {
                     normal = firstNormal;
                 }
             } else {
-                return Optional.empty();
+                return null;
             }
         }
-        return Optional.of(new IntersectionInfo(dist, normal, diffuse, specular, power));
+        return new IntersectionInfo(dist, normal, diffuse, specular, power);
     }
 
 }

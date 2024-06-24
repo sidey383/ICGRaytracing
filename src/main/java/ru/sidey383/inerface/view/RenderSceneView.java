@@ -17,17 +17,16 @@ public class RenderSceneView extends JPanel {
     @Getter
     private final RaytracingRender raytracing;
     private final BufferedImage image;
-    private ApplicationParameters parameters;
+    private final ApplicationParameters parameters;
     private final Timer imageUpdateTimer;
     private final RenderStatusDialog statusDialog;
     private final LinesPainter linesPainter = new LinesPainter();
     private boolean isDrawLines = false;
-
-    @Getter
     @NotNull
-    private final JScrollPane scrollPane;
+    private JPanel currentPanel;
 
     public RenderSceneView(@NotNull ApplicationParameters parameters, @NotNull BufferedImage image) {
+        setLayout(new BorderLayout());
         this.image = image;
         this.parameters = parameters;
         RaytraceConfiguration configuration = new RaytraceConfiguration(
@@ -46,7 +45,9 @@ public class RenderSceneView extends JPanel {
         statusDialog = new RenderStatusDialog(raytracing, this::stopRender);
         statusDialog.showStatus();
         setSizes();
-        scrollPane = new JScrollPane(this, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        setLayout(new BorderLayout());
+        currentPanel = new StaticImageViewer(image);
+        add(currentPanel, BorderLayout.CENTER);
 
     }
 
@@ -68,9 +69,18 @@ public class RenderSceneView extends JPanel {
 
     public void syncRepaint() {
         SwingUtilities.invokeLater(() -> {
-            this.revalidate();
-            this.repaint();
-        }
+                    this.revalidate();
+                    remove(currentPanel);
+                    if (raytracing.getStatus().isRunning()) {
+                        currentPanel = new StaticImageViewer(image);
+                    } else {
+                        currentPanel = new FinalImageViewer(image);
+                    }
+                    add(currentPanel, BorderLayout.CENTER);
+                    currentPanel.setFocusable(true);
+                    currentPanel.requestFocus();
+                    this.repaint();
+                }
         );
     }
 
@@ -118,8 +128,4 @@ public class RenderSceneView extends JPanel {
         syncRepaint();
     }
 
-    @Override
-    public void paintComponent(Graphics g) {
-        g.drawImage(image, 0, 0, null);
-    }
 }

@@ -10,7 +10,6 @@ import ru.sidey383.render.raytrace.IntersectionInfo;
 import ru.sidey383.render.raytrace.Ray;
 
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 @Accessors(fluent = true)
@@ -45,14 +44,14 @@ public final class SphereFigure implements Figure {
     }
 
     @Override
-    public Optional<IntersectionInfo> intersect(Ray ray) {
+    public IntersectionInfo intersect(Ray ray) {
         Vector3 l = position.sub(ray.origin());
         double tca = l.dot(ray.direction());
         if (tca < 0)
-            return Optional.empty();
+            return null;
         double d2 = l.dot(l) - tca * tca;
         if (d2 > radius * radius)
-            return Optional.empty();
+            return null;
         double thc = Math.sqrt(radius * radius - d2);
         double t0 = tca - thc;
         double t1 = tca + thc;
@@ -64,10 +63,11 @@ public final class SphereFigure implements Figure {
         if (t0 < 0) {
             t0 = t1;
             if (t0 < 0)
-                return Optional.empty();
+                return null;
         }
-        Vector3 normal = ray.origin().add(ray.direction().mul(t0)).sub(position).normalize();
-        return Optional.of(new IntersectionInfo(t0, normal, diffuse, specular, power));
+        Vector3 hit = ray.origin().add(ray.direction().mul(t0));
+        Vector3 normal = hit.sub(position).normalize();
+        return new IntersectionInfo(t0, normal, diffuse, specular, power);
     }
 
 }

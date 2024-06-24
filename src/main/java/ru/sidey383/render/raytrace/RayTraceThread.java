@@ -45,12 +45,10 @@ public class RayTraceThread extends Thread {
     private RaytraceResult getColors(Ray ray, int depth) {
         IntersectionInfo intersection = null;
         for (RaytraceObject o : configuration.objectList()) {
-            final IntersectionInfo old = intersection;
-            intersection = o.intersect(ray).map(info -> {
-                if (old == null || info.distance() < old.distance())
-                    return info;
-                return null;
-            }).orElse(old);
+            IntersectionInfo newI = o.intersect(ray);
+            if (newI != null && (intersection == null || newI.distance() < intersection.distance())) {
+                intersection = newI;
+            }
         }
         if (intersection == null)
             return new RaytraceResult(configuration.background(), 1);
@@ -67,7 +65,7 @@ public class RayTraceThread extends Thread {
             Ray reflectionRay = new Ray(position, reflection);
             RaytraceResult reflectionColor = getColors(reflectionRay, depth - 1);
             double f = 1 / (reflectionColor.distance + 1);
-            color = color.add(reflectionColor.color.mul(intersection.specular().mul(f)));
+            color = color.add(reflectionColor.color.mul(intersection.specular(), f));
         }
 
         return new RaytraceResult(color, intersection.distance());
@@ -84,14 +82,13 @@ public class RayTraceThread extends Thread {
             double d = l.length();
             double f = 1 / (d + 1);
             l = l.normalize();
-            Vector3 n = normal.normalize();
             Vector3 h = l.add(viewVector.normalize()).normalize();
-            double nl = n.dot(l);
-            double rv = n.dot(h);
+            double nl = normal.dot(l);
+            double rv = normal.dot(h);
             if (nl > 0)
-                color = color.add(defuse.mul(nl).mul(light.color()).mul(f));
+                color = color.add(defuse.mul(light.color(), nl), f);
             if (rv > 0)
-                color = color.add(specular.mul(Math.pow(rv, power)).mul(light.color()).mul(f));
+                color = color.add(specular.mul(light.color(), Math.pow(rv, power)), f);
         }
         return color;
     }
@@ -99,7 +96,7 @@ public class RayTraceThread extends Thread {
     private boolean hasIntersection(Vector3 position, Vector3 light) {
         Ray ray = new Ray(position, light.sub(position));
         for (RaytraceObject o : configuration.objectList()) {
-            if (o.intersect(ray).isPresent()) {
+            if (o.intersect(ray) != null) {
                 return true;
             }
         }
